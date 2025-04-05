@@ -21,6 +21,11 @@ public class Sala {
     public Sala(int asientos) {
         this.asientos = asientos;
     }
+    
+    @Override
+    public String toString() {
+        return "" + id;
+    }
 
     public int getId() {
         return id;
