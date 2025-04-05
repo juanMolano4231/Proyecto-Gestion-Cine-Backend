@@ -17,18 +17,21 @@ public class Funcion {
     private String fin;
     private boolean[] asientos;
     private String titulo;
+    private int id;
 
-    public Funcion(String inicio, String fin, String titulo, int asientos) {
+    public Funcion(String inicio, String fin, String titulo, int asientos, int id) {
         this.inicio = inicio;
         this.fin = fin;
         this.titulo = titulo;
         this.asientos = new boolean[asientos];
+        this.id = id;
     }
 
     @Override
     public String toString() {
         return titulo;
     }
+    
 
     public String getTitulo() {
         return titulo;
@@ -60,6 +63,14 @@ public class Funcion {
 
     public void setAsientos(boolean[] asientos) {
         this.asientos = asientos;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
 }
