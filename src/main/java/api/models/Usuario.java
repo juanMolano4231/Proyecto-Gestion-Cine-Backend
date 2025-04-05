@@ -5,6 +5,9 @@
 
 package api.models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author Juan José Molano Franco
@@ -13,10 +16,12 @@ public class Usuario {
     
     private String usuario;
     private long pin;
+    private List<Tiquete> tickets;
 
     public Usuario(String usuario, long pin) {
         this.usuario = usuario;
         this.pin = pin;
+        this.tickets = new ArrayList<>();
     }
 
     @Override
@@ -38,6 +43,14 @@ public class Usuario {
 
     public void setPin(long pin) {
         this.pin = pin;
+    }
+
+    public List<Tiquete> getTickets() {
+        return tickets;
+    }
+
+    public void setTickets(List<Tiquete> tickets) {
+        this.tickets = tickets;
     }
 
 
