@@ -26,6 +26,14 @@ public class Funcion {
         this.asientos = new boolean[asientos];
         this.id = id;
     }
+    
+    public Funcion(String inicio, String fin, String titulo, int asientos) {
+        this.inicio = inicio;
+        this.fin = fin;
+        this.titulo = titulo;
+        this.asientos = new boolean[asientos];
+        id = -1;
+    }
 
     @Override
     public String toString() {
