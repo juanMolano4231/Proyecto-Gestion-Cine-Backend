@@ -14,11 +14,20 @@ import java.util.List;
  */
 public class Sala {
     
+    private int id;
     private int asientos;
     private List<Funcion> funciones = new ArrayList<>();
 
     public Sala(int asientos) {
         this.asientos = asientos;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public int getAsientos() {

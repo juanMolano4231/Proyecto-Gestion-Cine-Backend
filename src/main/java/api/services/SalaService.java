@@ -2,13 +2,13 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-
 package api.services;
 
 import api.repositories.SalaRepository;
 import api.models.Funcion;
 import api.models.Sala;
 import java.util.List;
+import javax.swing.JOptionPane;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,14 +26,18 @@ public class SalaService {
         this.repository = repository;
         initSampleData();
     }
+
     private void initSampleData() {
         Sala s1 = new Sala(30);
+        saveSala(s1);
         Sala s2 = new Sala(46);
-        Funcion f = new Funcion("", "", "a", s2.getAsientos());
+        saveSala(s2);  // PRIMERO GUARDAR SALA ANTES DE AÑADIR FUNCIONES PARA QUE LAS ID SE ASIGNEN CORRECTAMENTE
+
+        Funcion f = new Funcion("", "", "Zootopia", s2.getAsientos(), repository.idFuncionUnica());
         f.getAsientos()[0] = true;
         s2.getFunciones().add(f);
-        saveSala(s1);
-        saveSala(s2);
+        Funcion f2 = new Funcion("", "", "Big hero", s2.getAsientos(), repository.idFuncionUnica());
+        s2.getFunciones().add(f2);
     }
 
     public Sala saveSala(Sala sala) {
