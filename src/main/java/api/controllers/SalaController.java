@@ -64,16 +64,16 @@ public class SalaController {
         return new ResponseEntity<>(nuevaSala, HttpStatus.CREATED);
     }
     
-    @DeleteMapping("/{index}")
-    @Operation(summary = "Eliminar una sala", description = "Elimina una sala por index")
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Eliminar una sala", description = "Elimina una sala por ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Sala eliminada con éxito"),
             @ApiResponse(responseCode = "404", description = "Sala no encontrado")
     })
-    public ResponseEntity<Void> deleteSala(@PathVariable @Parameter(description = "Index de la sala") int index) {
-        Sala salaExistente = service.findSala(index);
+    public ResponseEntity<Void> deleteSala(@PathVariable @Parameter(description = "ID de la sala") int id) {
+        Sala salaExistente = service.findSala(id);
         if (salaExistente != null) {
-            service.deleteSala(index);
+            service.deleteSala(salaExistente);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

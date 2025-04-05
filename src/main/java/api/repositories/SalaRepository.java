@@ -29,16 +29,21 @@ public class SalaRepository {
         return baseDeDatosSalas;
     }
 
-    public Sala findSala(int index) {
-        try {
-            return baseDeDatosSalas.get(index);
-        } catch (Exception e) {
-            return null;
-        }
+    public Sala findSala(int id) {
+//        for (Sala s : baseDeDatosSalas) {
+//            if (s.getId() == id) {
+//                return s;
+//            }
+//        }
+//        return null;
+        return baseDeDatosSalas.stream()
+                .filter(s -> s.getId() == id)
+                .findAny()
+                .orElse(null);
     }
 
-    public void deleteSala(int index) {
-        baseDeDatosSalas.remove(index);
+    public void deleteSala(Sala sala) {
+        baseDeDatosSalas.remove(sala);
     }
 
     public int idFuncionUnica() {
