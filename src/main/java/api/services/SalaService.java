@@ -62,4 +62,8 @@ public class SalaService {
         return repository.saveFuncion(id, datos);
     }
 
+    public Sala patchSala(int id, Sala sala) {
+        return repository.patchSala(id, sala);
+    }
+
 }
