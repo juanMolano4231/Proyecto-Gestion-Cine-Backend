@@ -105,4 +105,16 @@ public class SalaRepository {
         }
         print(message);
     }
+
+    public Sala patchSala(int id, Sala sala) {
+        for (int i = 0; i < baseDeDatosSalas.size(); i++) {
+            Sala s = baseDeDatosSalas.get(i);
+            if (s.getId() == id) {
+                baseDeDatosSalas.set(i, sala);
+                return sala;
+            }
+        }
+        return null;
+    }
+
 }
