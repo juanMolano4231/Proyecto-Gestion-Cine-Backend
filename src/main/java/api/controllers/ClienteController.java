@@ -5,8 +5,10 @@
 package api.controllers;
 
 import api.models.Cliente;
+import api.models.Usuario;
 import api.services.ClienteService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -41,6 +43,22 @@ public class ClienteController {
     public ResponseEntity<List<Cliente>> getAllClientes() {
         List<Cliente> clientes = service.getAllClientes();
         return new ResponseEntity<>(clientes, HttpStatus.OK);
+    }
+    
+    @PostMapping("/{user}")
+    @Operation(summary = "Actualizar cliente", description = "Actualiza un cliente según los datos proporcionados.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = " Cliente actualizado con éxito"),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos")
+    })
+    public ResponseEntity<Cliente> postCliente(@PathVariable @Parameter(description = "Username del cliente") String user,
+            @RequestBody @Parameter(description = "Datos del cliente a actualizar") Cliente cliente) {
+        Cliente nuevoCliente = service.postCliente(user, cliente);
+        if (nuevoCliente == null) {
+            return new ResponseEntity<>(nuevoCliente, HttpStatus.BAD_REQUEST);
+        } else {
+            return new ResponseEntity<>(nuevoCliente, HttpStatus.CREATED);
+        }
     }
 
 }

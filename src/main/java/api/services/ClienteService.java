@@ -31,4 +31,8 @@ public class ClienteService {
         List<Usuario> usuarios = usuarioService.getAllUsuarios();
         return clienteRepository.getAllClientes(usuarios);
     }
+
+    public Cliente postCliente(String user, Cliente cliente) {
+        return usuarioService.postCliente(user, cliente);
+    }
 }
