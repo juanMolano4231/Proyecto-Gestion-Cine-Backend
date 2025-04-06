@@ -36,4 +36,15 @@ public class UsuarioRepository {
         return null;
     }
 
+    public Usuario postUsuario(String user, Usuario usuario) {
+        for (int i = 0; i < baseDeDatosUsuarios.size(); i++) {
+            Usuario u = baseDeDatosUsuarios.get(i);
+            if (u.getUsuario().equals(user)) {
+                baseDeDatosUsuarios.set(i, usuario);
+                return usuario;
+            }
+        }
+        return null;
+    }
+
 }

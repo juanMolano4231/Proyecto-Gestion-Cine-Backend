@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -72,6 +73,22 @@ public class UsuarioController {
             return new ResponseEntity<>(usuario, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+    
+    @PostMapping("/{user}")
+    @Operation(summary = "Actualizar usuario", description = "Actualiza un usuario según los datos proporcionados.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Usuario actualizada con éxito"),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos")
+    })
+    public ResponseEntity<Usuario> postUsuario(@PathVariable @Parameter(description = "username del usuario") String user,
+            @RequestBody @Parameter(description = "Datos del usuario a actualizar") Usuario usuario) {
+        Usuario nuevoUsuario = service.postUsuario(user, usuario);
+        if (nuevoUsuario == null) {
+            return new ResponseEntity<>(nuevoUsuario, HttpStatus.BAD_REQUEST);
+        } else {
+            return new ResponseEntity<>(nuevoUsuario, HttpStatus.CREATED);
         }
     }
 
