@@ -50,12 +50,12 @@ public class SalaService {
         return repository.getSalas();
     }
 
-    public Sala findSala(int index) {
-        return repository.findSala(index);
+    public Sala findSala(int id) {
+        return repository.findSala(id);
     }
 
-    public void deleteSala(int index) {
-        repository.deleteSala(index);
+    public void deleteSala(Sala sala) {
+        repository.deleteSala(sala);
     }
 
     public Funcion saveFuncion(int id, String[] datos) {

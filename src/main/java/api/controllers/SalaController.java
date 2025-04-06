@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -64,43 +65,24 @@ public class SalaController {
         Sala nuevaSala = service.saveSala(sala);
         return new ResponseEntity<>(nuevaSala, HttpStatus.CREATED);
     }
-
-    @DeleteMapping("/{index}")
-    @Operation(summary = "Eliminar una sala", description = "Elimina una sala por index")
+    
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Eliminar una sala", description = "Elimina una sala por ID")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "204", description = "Sala eliminada con éxito"),
         @ApiResponse(responseCode = "404", description = "Sala no encontrado")
     })
-    public ResponseEntity<Void> deleteSala(@PathVariable @Parameter(description = "Index de la sala") int index) {
-        Sala salaExistente = service.findSala(index);
+    public ResponseEntity<Void> deleteSala(@PathVariable @Parameter(description = "ID de la sala") int id) {
+        Sala salaExistente = service.findSala(id);
         if (salaExistente != null) {
-            service.deleteSala(index);
+            service.deleteSala(salaExistente);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
-//    @PostMapping("/{id}")
-//    @Operation(summary = "Crear una nueva función", description = "Crea una nueva función para cierta sala con los datos proporcionados.")
-//    @ApiResponses(value = {
-//        @ApiResponse(responseCode = "201", description = "Función creado con éxito"),
-//        @ApiResponse(responseCode = "400", description = "Datos inválidos")
-//    })
-//    public ResponseEntity<Funcion> createFuncion(@PathVariable @Parameter(description = "ID de la sala") int id,
-//            @RequestBody @Parameter(description = "Datos de la función a crear") Funcion funcion) {
-//        Funcion nuevaFuncion = service.saveFuncion(id, funcion);
-    ////        service.printSalas();
-//        if (nuevaFuncion == null) {
-////            JOptionPane.showMessageDialog(null, "null");
-//            return new ResponseEntity<>(nuevaFuncion, HttpStatus.BAD_REQUEST);
-//        } else {
-////            JOptionPane.showMessageDialog(null, "no null");
-//            return new ResponseEntity<>(nuevaFuncion, HttpStatus.CREATED);
-//        }
-//    }
-    
-    @PostMapping("/{id}")
+    @PutMapping("/{id}")
     @Operation(summary = "Crear una nueva función", description = "Crea una nueva función para cierta sala con los datos proporcionados.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Función creado con éxito"),
