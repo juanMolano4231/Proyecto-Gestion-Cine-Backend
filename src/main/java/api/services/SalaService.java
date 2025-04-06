@@ -34,10 +34,10 @@ public class SalaService {
         Sala s2 = new Sala(46);
         saveSala(s2);  // PRIMERO GUARDAR SALA ANTES DE AÑADIR FUNCIONES PARA QUE LAS ID SE ASIGNEN CORRECTAMENTE
 
-        Funcion f = new Funcion("", "", "Zootopia", s2.getAsientos(), repository.idFuncionUnica());
+        Funcion f = new Funcion("2025-05-12:14:15", "2025-05-12:15", "Zootopia", s2.getAsientos(), repository.idFuncionUnica());
         f.getAsientos()[0] = true;
         s2.getFunciones().add(f);
-        Funcion f2 = new Funcion("", "", "Big hero", s2.getAsientos(), repository.idFuncionUnica());
+        Funcion f2 = new Funcion("2025-05-13:16", "2025-05-13:17", "Big hero", s2.getAsientos(), repository.idFuncionUnica());
         s2.getFunciones().add(f2);
     }
 
