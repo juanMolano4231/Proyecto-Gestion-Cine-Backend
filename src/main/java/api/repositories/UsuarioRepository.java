@@ -5,6 +5,7 @@
 
 package api.repositories;
 
+import api.models.Cliente;
 import api.models.Usuario;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +43,20 @@ public class UsuarioRepository {
             if (u.getUsuario().equals(user)) {
                 baseDeDatosUsuarios.set(i, usuario);
                 return usuario;
+            }
+        }
+        return null;
+    }
+
+    public Cliente postCliente(String user, Cliente cliente) {
+        for (int i = 0; i < baseDeDatosUsuarios.size(); i++) {
+            Usuario u = baseDeDatosUsuarios.get(i);
+            if (u instanceof Cliente) {
+                Cliente c = (Cliente) u;
+                if (u.getUsuario().equals(user)) {
+                    baseDeDatosUsuarios.set(i, cliente);
+                    return cliente;
+                }
             }
         }
         return null;

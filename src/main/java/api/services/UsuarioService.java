@@ -51,4 +51,8 @@ public class UsuarioService {
     public Usuario postUsuario(String user, Usuario usuario) {
         return repository.postUsuario(user, usuario);
     }
+
+    Cliente postCliente(String user, Cliente cliente) {
+        return repository.postCliente(user, cliente);
+    }
 }
