@@ -47,4 +47,8 @@ public class UsuarioService {
     public Usuario findByUser(String user) {
         return repository.findByUser(user);
     }
+
+    public Usuario postUsuario(String user, Usuario usuario) {
+        return repository.postUsuario(user, usuario);
+    }
 }
