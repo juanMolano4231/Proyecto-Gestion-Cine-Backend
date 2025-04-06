@@ -35,6 +35,9 @@ public class Funcion {
         id = -1;
     }
 
+    public Funcion() {
+    }
+
     @Override
     public String toString() {
         return titulo;

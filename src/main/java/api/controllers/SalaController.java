@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -65,7 +66,7 @@ public class SalaController {
         Sala nuevaSala = service.saveSala(sala);
         return new ResponseEntity<>(nuevaSala, HttpStatus.CREATED);
     }
-    
+
     @DeleteMapping("/{id}")
     @Operation(summary = "Eliminar una sala", description = "Elimina una sala por ID")
     @ApiResponses(value = {
@@ -95,6 +96,22 @@ public class SalaController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } else {
             return new ResponseEntity<>(HttpStatus.CREATED);
+        }
+    }
+
+    @PatchMapping("/{id}")
+    @Operation(summary = "Actualizar sala", description = "Actualiza una sala según los datos proporcionados.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Sala actualizada con éxito"),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos")
+    })
+    public ResponseEntity<Sala> patchSala(@PathVariable @Parameter(description = "ID de la sala") int id,
+            @RequestBody @Parameter(description = "Datos de la sala a actualizar") Sala sala) {
+        Sala nuevaSala = service.patchSala(id, sala);
+        if (nuevaSala == null) {
+            return new ResponseEntity<>(nuevaSala, HttpStatus.BAD_REQUEST);
+        } else {
+            return new ResponseEntity<>(nuevaSala, HttpStatus.CREATED);
         }
     }
 }
