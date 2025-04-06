@@ -8,6 +8,7 @@ import api.models.Funcion;
 import api.models.Sala;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import javax.swing.JOptionPane;
 import org.springframework.stereotype.Repository;
 
@@ -64,7 +65,7 @@ public class SalaRepository {
     private int idSalaUnica() {
         for (int i = 0;; i++) {
             boolean match = idSalaRepetida(i);
-            if (! match) {
+            if (!match) {
                 return i;
             }
         }
@@ -78,4 +79,30 @@ public class SalaRepository {
         return baseDeDatosSalas.stream().anyMatch(s -> s.getId() == i);
     }
 
+    public Funcion saveFuncion(int id, String[] datos) {
+        Funcion funcion = null;
+        for (Sala s : baseDeDatosSalas) {
+            if (s.getId() == id) {
+                funcion = new Funcion(datos[1], datos[2], datos[0], s.getAsientos(), idFuncionUnica());
+                s.getFunciones().add(funcion);
+                return funcion;
+            }
+        }
+        return null;
+    }
+
+    private void print(String message) {
+        JOptionPane.showMessageDialog(null, message);
+    }
+
+    public void printSalas() {
+        String message = "";
+        for (Sala s : baseDeDatosSalas) {
+            message += "Sala " + s.getId() + "\n";
+            for (Funcion f : s.getFunciones()) {
+                message += "    Funcion " + f.getId() + "\n";
+            }
+        }
+        print(message);
+    }
 }

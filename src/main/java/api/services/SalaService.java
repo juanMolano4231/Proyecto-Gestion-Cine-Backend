@@ -4,6 +4,7 @@
  */
 package api.services;
 
+import api.controllers.SalaController;
 import api.repositories.SalaRepository;
 import api.models.Funcion;
 import api.models.Sala;
@@ -56,4 +57,9 @@ public class SalaService {
     public void deleteSala(Sala sala) {
         repository.deleteSala(sala);
     }
+
+    public Funcion saveFuncion(int id, String[] datos) {
+        return repository.saveFuncion(id, datos);
+    }
+
 }
