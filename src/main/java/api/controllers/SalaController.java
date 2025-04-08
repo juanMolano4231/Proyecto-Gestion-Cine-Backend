@@ -90,7 +90,7 @@ public class SalaController {
         @ApiResponse(responseCode = "400", description = "Datos inválidos")
     })
     public ResponseEntity<Void> createFuncion(@PathVariable @Parameter(description = "ID de la sala") int id,
-            @RequestBody @Parameter(description = "Datos de la función a crear") String[] datos) {
+            @RequestBody @Parameter(description = "Datos de la función a crear (título, fecha inicio, fecha fin).") String[] datos) {
         Funcion nuevaFuncion = service.saveFuncion(id, datos);
         if (nuevaFuncion == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
