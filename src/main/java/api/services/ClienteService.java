@@ -35,4 +35,8 @@ public class ClienteService {
     public Cliente postCliente(String user, Cliente cliente) {
         return usuarioService.postCliente(user, cliente);
     }
+
+    public Cliente saveCliente(Cliente cliente) {
+        return (Cliente) usuarioService.saveUsuario(cliente);
+    }
 }
