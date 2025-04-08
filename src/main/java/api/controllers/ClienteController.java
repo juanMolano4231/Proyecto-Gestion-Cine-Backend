@@ -60,5 +60,16 @@ public class ClienteController {
             return new ResponseEntity<>(nuevoCliente, HttpStatus.CREATED);
         }
     }
+    
+    @PostMapping
+    @Operation(summary = "Crear un nuevo cliente", description = "Crea un nuevo cliente con los datos proporcionados.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Cliente creado con éxito"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos")
+    })
+    public ResponseEntity<Cliente> createCliente(@RequestBody @Parameter(description = "Datos del cliente a crear") Cliente cliente) {
+        Cliente newUsuario = service.saveCliente(cliente);
+        return new ResponseEntity<>(newUsuario, HttpStatus.CREATED);
+    }
 
 }
