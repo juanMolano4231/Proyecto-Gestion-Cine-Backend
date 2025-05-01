@@ -32,7 +32,7 @@ public class ClienteService {
         return clienteRepository.getAllClientes(usuarios);
     }
 
-    public Cliente postCliente(String user, Cliente cliente) {
-        return usuarioService.postCliente(user, cliente);
-    }
+//    public Cliente postCliente(String user, Cliente cliente) {
+//        return usuarioService.postCliente(user, cliente);
+//    }
 }

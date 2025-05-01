@@ -45,20 +45,20 @@ public class ClienteController {
         return new ResponseEntity<>(clientes, HttpStatus.OK);
     }
     
-    @PostMapping("/{user}")
-    @Operation(summary = "Actualizar cliente", description = "Actualiza un cliente según los datos proporcionados.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = " Cliente actualizado con éxito"),
-        @ApiResponse(responseCode = "400", description = "Datos inválidos")
-    })
-    public ResponseEntity<Cliente> postCliente(@PathVariable @Parameter(description = "Username del cliente") String user,
-            @RequestBody @Parameter(description = "Datos del cliente a actualizar") Cliente cliente) {
-        Cliente nuevoCliente = service.postCliente(user, cliente);
-        if (nuevoCliente == null) {
-            return new ResponseEntity<>(nuevoCliente, HttpStatus.BAD_REQUEST);
-        } else {
-            return new ResponseEntity<>(nuevoCliente, HttpStatus.CREATED);
-        }
-    }
+//    @PostMapping("/{user}")
+//    @Operation(summary = "Actualizar cliente", description = "Actualiza un cliente según los datos proporcionados.")
+//    @ApiResponses(value = {
+//        @ApiResponse(responseCode = "201", description = " Cliente actualizado con éxito"),
+//        @ApiResponse(responseCode = "400", description = "Datos inválidos")
+//    })
+//    public ResponseEntity<Cliente> postCliente(@PathVariable @Parameter(description = "Username del cliente") String user,
+//            @RequestBody @Parameter(description = "Datos del cliente a actualizar") Cliente cliente) {
+//        Cliente nuevoCliente = service.postCliente(user, cliente);
+//        if (nuevoCliente == null) {
+//            return new ResponseEntity<>(nuevoCliente, HttpStatus.BAD_REQUEST);
+//        } else {
+//            return new ResponseEntity<>(nuevoCliente, HttpStatus.CREATED);
+//        }
+//    }
 
 }

@@ -25,7 +25,7 @@ public class UsuarioService {
     @Autowired
     public UsuarioService(UsuarioRepository repository) {
         this.repository = repository;
-        initSampleData();
+//        initSampleData();
     }
 
     private void initSampleData() {
@@ -48,11 +48,11 @@ public class UsuarioService {
         return repository.findByUser(user);
     }
 
-    public Usuario postUsuario(String user, Usuario usuario) {
-        return repository.postUsuario(user, usuario);
+    public Usuario updateUsuario(String user, Usuario usuario) {
+        return repository.updateUsuario(user, usuario);
     }
 
-    Cliente postCliente(String user, Cliente cliente) {
-        return repository.postCliente(user, cliente);
-    }
+//    Cliente postCliente(String user, Cliente cliente) {
+//        return repository.postCliente(user, cliente);
+//    }
 }

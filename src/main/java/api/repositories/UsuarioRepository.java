@@ -13,6 +13,7 @@ import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.bind.annotation.GetMapping;
 
 /**
  *
@@ -28,44 +29,41 @@ public class UsuarioRepository {
     public void saveUsuario(Usuario usuario) {
         entityManager.persist(usuario);
     }
-
+    
     public List<Usuario> getAllUsuarios() {
         Query query = entityManager.createNamedQuery("SELECT * FROM usuarios", Usuario.class);
         return query.getResultList();
     }
 
     public Usuario findByUser(String user) {
-        for (Usuario usuario : baseDeDatosUsuarios) {
-            if (usuario.getUsuario().equals(user)) {
-                return usuario;
-            }
+        Query query = entityManager.createNamedQuery("SELECT * FROM usuarios WHERE usuario = :usuario", Usuario.class);
+        query.setParameter("usuario", user);
+        List<Usuario> result = query.getResultList();
+        return result.isEmpty() ? null : result.get(0);
+    }
+
+    public Usuario updateUsuario(String user, Usuario usuario) {
+        Usuario existente = findByUser(user);
+        if(existente != null) {
+            existente.setPin(usuario.getPin());
+            existente.setUsuario(usuario.getUsuario());
+            return entityManager.merge(existente);
         }
         return null;
     }
 
-    public Usuario postUsuario(String user, Usuario usuario) {
-        for (int i = 0; i < baseDeDatosUsuarios.size(); i++) {
-            Usuario u = baseDeDatosUsuarios.get(i);
-            if (u.getUsuario().equals(user)) {
-                baseDeDatosUsuarios.set(i, usuario);
-                return usuario;
-            }
-        }
-        return null;
-    }
-
-    public Cliente postCliente(String user, Cliente cliente) {
-        for (int i = 0; i < baseDeDatosUsuarios.size(); i++) {
-            Usuario u = baseDeDatosUsuarios.get(i);
-            if (u instanceof Cliente) {
-                Cliente c = (Cliente) u;
-                if (u.getUsuario().equals(user)) {
-                    baseDeDatosUsuarios.set(i, cliente);
-                    return cliente;
-                }
-            }
-        }
-        return null;
-    }
+//    public Cliente postCliente(String user, Cliente cliente) {
+//        for (int i = 0; i < baseDeDatosUsuarios.size(); i++) {
+//            Usuario u = baseDeDatosUsuarios.get(i);
+//            if (u instanceof Cliente) {
+//                Cliente c = (Cliente) u;
+//                if (u.getUsuario().equals(user)) {
+//                    baseDeDatosUsuarios.set(i, cliente);
+//                    return cliente;
+//                }
+//            }
+//        }
+//        return null;
+//    }
 
 }
