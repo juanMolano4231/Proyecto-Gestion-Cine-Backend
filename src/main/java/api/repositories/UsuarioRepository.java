@@ -29,14 +29,14 @@ public class UsuarioRepository {
     public void saveUsuario(Usuario usuario) {
         entityManager.persist(usuario);
     }
-    
+
     public List<Usuario> getAllUsuarios() {
-        Query query = entityManager.createNamedQuery("SELECT * FROM usuarios", Usuario.class);
+        Query query = entityManager.createNativeQuery("SELECT * FROM usuarios", Usuario.class);
         return query.getResultList();
     }
 
     public Usuario findByUser(String user) {
-        Query query = entityManager.createNamedQuery("SELECT * FROM usuarios WHERE usuario = :usuario", Usuario.class);
+        Query query = entityManager.createNativeQuery("SELECT * FROM usuarios WHERE usuario = :usuario", Usuario.class);
         query.setParameter("usuario", user);
         List<Usuario> result = query.getResultList();
         return result.isEmpty() ? null : result.get(0);
@@ -44,7 +44,7 @@ public class UsuarioRepository {
 
     public Usuario updateUsuario(String user, Usuario usuario) {
         Usuario existente = findByUser(user);
-        if(existente != null) {
+        if (existente != null) {
             existente.setPin(usuario.getPin());
             existente.setUsuario(usuario.getUsuario());
             return entityManager.merge(existente);
@@ -65,5 +65,4 @@ public class UsuarioRepository {
 //        }
 //        return null;
 //    }
-
 }

@@ -39,8 +39,9 @@ public class UsuarioController {
     @Autowired
     public UsuarioController(UsuarioService service) {
         this.service = service;
+        System.out.println(">>> UsuarioController inicializado");
     }
-    
+
     @Transactional
     @GetMapping
     public List<Usuario> getAllUsuarios() {
