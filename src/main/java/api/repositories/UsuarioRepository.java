@@ -2,12 +2,15 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-
 package api.repositories;
 
 import api.models.Cliente;
 import api.models.Usuario;
-import java.util.ArrayList;
+import api.models.Usuario;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import org.springframework.stereotype.Repository;
 
@@ -15,22 +18,25 @@ import org.springframework.stereotype.Repository;
  *
  * @author Juan José Molano Franco
  */
-
 @Repository
+@Transactional
 public class UsuarioRepository {
-    private final List<Usuario> baseDeDatosUsuarios = new ArrayList<>();
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public void saveUsuario(Usuario usuario) {
-        baseDeDatosUsuarios.add(usuario);
+        entityManager.persist(usuario);
     }
-    
+
     public List<Usuario> getAllUsuarios() {
-        return baseDeDatosUsuarios;
+        Query query = entityManager.createNamedQuery("SELECT * FROM usuarios", Usuario.class);
+        return query.getResultList();
     }
 
     public Usuario findByUser(String user) {
         for (Usuario usuario : baseDeDatosUsuarios) {
-            if(usuario.getUsuario().equals(user)) {
+            if (usuario.getUsuario().equals(user)) {
                 return usuario;
             }
         }
