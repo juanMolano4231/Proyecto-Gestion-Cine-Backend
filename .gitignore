@@ -1,3 +1,4 @@
 /target/
 /test/nbproject/private/
 /test/build/
+.env
