@@ -25,14 +25,16 @@ public class UsuarioService {
     @Autowired
     public UsuarioService(UsuarioRepository repository) {
         this.repository = repository;
-//        initSampleData();
+        initSampleData();
     }
 
     private void initSampleData() {
         Usuario juan = new Administrador("juan1234", 1234);
         Usuario johan = new Cliente("johan1234", 1234);
-//        saveUsuario(juan);
-//        saveUsuario(johan);
+        juan.setTipo("admin");
+        johan.setTipo("cliente");
+        saveUsuario(juan);
+        saveUsuario(johan);
     }
 
     public Usuario saveUsuario(Usuario usuario) {

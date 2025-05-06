@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -33,15 +34,33 @@ public class UsuarioRepository {
     private EntityManager entityManager;
 
     private final List<Usuario> baseDeDatosUsuarios = new ArrayList<>();
-    
+
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(UsuarioRepository.class);
+
     @Transactional
     public void saveUsuario(Usuario usuario) {
-        usuario.setId(idUsuarioUnico());
-        baseDeDatosUsuarios.add(usuario);
+        if (usuario == null || usuario.getUsuario() == null) {
+            logger.warn("Usuario nulo o sin nombre de usuario, no se puede guardar.");
+            return;
+        }
+
+        if (findByUser(usuario.getUsuario()) != null) {
+            logger.info("El usuario '{}' ya existe, se omite la inserción.", usuario.getUsuario());
+            return;
+        }
+
+        UsuarioData data = new UsuarioData();
+        data.setUsuario(usuario.getUsuario());
+        data.setPin(usuario.getPin());
+        data.setTipo(usuario.getTipo() == null || usuario.getTipo().isBlank() ? "cliente" : usuario.getTipo());
+
+        entityManager.persist(data);
+        entityManager.flush();
+        usuario.setId(data.getId());
     }
 
     public List<Usuario> getAllUsuarios() {
-        Query query = entityManager.createNativeQuery("SELECT * FROM usuarios", Usuario.class);
+        Query query = entityManager.createNativeQuery("SELECT * FROM usuarios_data", UsuarioData.class);
         List<UsuarioData> dataUsuarios = query.getResultList();
         List<Usuario> usuarios = new ArrayList<>();
 
@@ -60,11 +79,25 @@ public class UsuarioRepository {
         return usuarios;
     }
 
-    public Usuario findByUser(String user) {
-        Query query = entityManager.createNativeQuery("SELECT * FROM usuarios WHERE usuario = :usuario", Usuario.class);
-        query.setParameter("usuario", user);
-        List<Usuario> result = query.getResultList();
-        return result.isEmpty() ? null : result.get(0);
+    public Usuario findByUser(String usuario) {
+        Query query = entityManager.createNativeQuery("SELECT * FROM usuarios_data WHERE usuario = :usuario", UsuarioData.class);
+        query.setParameter("usuario", usuario);
+
+        List<UsuarioData> result = query.getResultList();
+        if (result.isEmpty()) {
+            return null;
+        }
+        return convertir(result.get(0));
+    }
+
+    public Usuario convertir(UsuarioData data) {
+        Usuario u = new Usuario();
+        u.setId(data.getId());
+        u.setUsuario(data.getUsuario());
+        u.setPin(data.getPin());
+        u.setTipo(data.getTipo());
+
+        return u;
     }
 
     public Usuario updateUsuario(String user, Usuario usuario) {
@@ -72,7 +105,18 @@ public class UsuarioRepository {
         if (existente != null) {
             existente.setPin(usuario.getPin());
             existente.setUsuario(usuario.getUsuario());
-            return entityManager.merge(existente);
+            UsuarioData data = entityManager.find(UsuarioData.class, existente.getId());
+
+            if (data == null) {
+                return null;
+            }
+
+            data.setUsuario(usuario.getUsuario());
+            data.setPin(usuario.getPin());
+            data.setTipo(usuario.getTipo() != null ? usuario.getTipo() : "cliente");
+
+            entityManager.merge(data);
+            return convertir(data);
         }
         return null;
     }
@@ -100,34 +144,4 @@ public class UsuarioRepository {
         }
     }
 
-    private List<Usuario> findUsuarioById(List<Integer> idsUsuarios) {
-        ArrayList<Usuario> usuarios = new ArrayList<>();
-        for (Integer id : idsUsuarios) {
-            Query query = entityManager.createNativeQuery("SELECT * FROM usuarios_data WHERE id = :id", UsuarioData.class);
-            query.setParameter("id", id.intValue());
-            UsuarioData data = (UsuarioData) query.getSingleResult();
-
-            Usuario u = new Usuario();
-
-            u.setUsuario(data.getUsuario());
-            u.setPin(data.getPin());
-            u.setId(data.getId());
-            u.setTipo(data.getTipo());
-        }
-        return usuarios;
-    }
-    
-    private int idUsuarioUnico() {
-        for (int i = 0;; i++) {
-            boolean match = idUsuarioRepetido(i);
-            if (!match) {
-                return i;
-            }
-        }
-    }
-    
-    private boolean idUsuarioRepetido(int i) {
-        return baseDeDatosUsuarios.stream().anyMatch(u -> u.getId() == i);
-    }
-    
 }

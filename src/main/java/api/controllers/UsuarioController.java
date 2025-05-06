@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Juan José Molano Franco
  */
 @RestController
-@RequestMapping("/api/usuarios")
+@RequestMapping("/api/usuarios_data")
 @Tag(name = "Usuarios", description = "API para la gestión de usuarios")
 public class UsuarioController {
 
