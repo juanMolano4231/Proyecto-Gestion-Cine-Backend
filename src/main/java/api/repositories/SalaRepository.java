@@ -6,11 +6,21 @@ package api.repositories;
 
 import api.models.Funcion;
 import api.models.Sala;
+import api.models.data.FuncionData;
+import api.models.data.SalaData;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import javax.swing.JOptionPane;
 import org.springframework.stereotype.Repository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.EmptyResultDataAccessException;
 
 /**
  *
@@ -19,7 +29,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class SalaRepository {
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     private final List<Sala> baseDeDatosSalas = new ArrayList<>();
+
+    private static final Logger logger = LoggerFactory.getLogger(SalaRepository.class);
 
     public void saveSala(Sala sala) {
         sala.setId(idSalaUnica());
@@ -27,7 +42,20 @@ public class SalaRepository {
     }
 
     public List<Sala> getSalas() {
-        return baseDeDatosSalas;
+        Query query = entityManager.createNativeQuery("SELECT * FROM salas_data", SalaData.class);
+        List<SalaData> dataSalas = query.getResultList();
+        List<Sala> salas = new ArrayList<>();
+        for (SalaData data : dataSalas) {
+            List<Integer> idsFunciones = parseFuncionJSON(data.getFunciones());
+
+            Sala sala = new Sala();
+            sala.setId(data.getId());
+            sala.setAsientos(data.getAsientos());
+            sala.setFunciones(findFuncionesById(idsFunciones));
+
+            salas.add(sala);
+        }
+        return salas;
     }
 
     public Sala findSala(int id) {
@@ -115,6 +143,45 @@ public class SalaRepository {
             }
         }
         return null;
+    }
+
+    private List<Integer> parseFuncionJSON(String funciones) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(funciones, new TypeReference<List<Integer>>() {
+            });
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private List<Funcion> findFuncionesById(List<Integer> idsFunciones) {
+        ArrayList<Funcion> funciones = new ArrayList<>();
+        for (Integer id : idsFunciones) {
+            Query query = entityManager.createNativeQuery("SELECT * FROM funciones_data WHERE id = :id", FuncionData.class);
+            query.setParameter("id", id.intValue());
+            FuncionData data = (FuncionData) query.getSingleResult(); // Si no hay tira EmptyResultDataAccessException 
+
+            Funcion f = new Funcion();
+
+            f.setFin(data.getFin());
+            f.setInicio(data.getInicio());
+            f.setTitulo(data.getTitulo());
+            f.setId(data.getId());
+            f.setAsientos(parseBooleanJSON(data.getAsientos()));
+
+            funciones.add(f);
+        }
+        return funciones;
+    }
+
+    private boolean[] parseBooleanJSON(String asientos) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(asientos, boolean[].class);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
 }

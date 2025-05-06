@@ -15,6 +15,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import javax.swing.JOptionPane;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +42,8 @@ public class SalaController {
 
     private final SalaService service;
 
+    private static final Logger logger = LoggerFactory.getLogger(SalaService.class);
+
     @Autowired
     public SalaController(SalaService service) {
         this.service = service;
@@ -52,8 +56,8 @@ public class SalaController {
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     public ResponseEntity<List<Sala>> getSalas() {
-        List<Sala> Salas = service.getSalas();
-        return new ResponseEntity<>(Salas, HttpStatus.OK);
+        List<Sala> salas = service.getSalas();
+        return new ResponseEntity<>(salas, HttpStatus.OK);
     }
 
     @PostMapping
