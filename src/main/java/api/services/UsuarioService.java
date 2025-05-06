@@ -31,8 +31,8 @@ public class UsuarioService {
     private void initSampleData() {
         Usuario juan = new Administrador("juan1234", 1234);
         Usuario johan = new Cliente("johan1234", 1234);
-        saveUsuario(juan);
-        saveUsuario(johan);
+//        saveUsuario(juan);
+//        saveUsuario(johan);
     }
 
     public Usuario saveUsuario(Usuario usuario) {

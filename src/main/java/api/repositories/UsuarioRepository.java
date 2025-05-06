@@ -7,11 +7,18 @@ package api.repositories;
 import api.models.Cliente;
 import api.models.Usuario;
 import api.models.Usuario;
+import api.models.data.UsuarioData;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -20,19 +27,37 @@ import org.springframework.web.bind.annotation.GetMapping;
  * @author Juan José Molano Franco
  */
 @Repository
-@Transactional
 public class UsuarioRepository {
 
     @PersistenceContext
     private EntityManager entityManager;
 
+    private final List<Usuario> baseDeDatosUsuarios = new ArrayList<>();
+    
+    @Transactional
     public void saveUsuario(Usuario usuario) {
-        entityManager.persist(usuario);
+        usuario.setId(idUsuarioUnico());
+        baseDeDatosUsuarios.add(usuario);
     }
 
     public List<Usuario> getAllUsuarios() {
         Query query = entityManager.createNativeQuery("SELECT * FROM usuarios", Usuario.class);
-        return query.getResultList();
+        List<UsuarioData> dataUsuarios = query.getResultList();
+        List<Usuario> usuarios = new ArrayList<>();
+
+        for (UsuarioData data : dataUsuarios) {
+            List<Integer> idsUsuarios = ParseUsuarioJSON(data.getUsuario());
+
+            Usuario u = new Usuario();
+
+            u.setId(data.getId());
+            u.setUsuario(data.getUsuario());
+            u.setPin(data.getPin());
+            u.setTipo(data.getTipo());
+
+            usuarios.add(u);
+        }
+        return usuarios;
     }
 
     public Usuario findByUser(String user) {
@@ -65,4 +90,44 @@ public class UsuarioRepository {
 //        }
 //        return null;
 //    }
+    private List<Integer> ParseUsuarioJSON(String usuarios) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(usuarios, new TypeReference<List<Integer>>() {
+            });
+        } catch (JsonProcessingException ex) {
+            return null;
+        }
+    }
+
+    private List<Usuario> findUsuarioById(List<Integer> idsUsuarios) {
+        ArrayList<Usuario> usuarios = new ArrayList<>();
+        for (Integer id : idsUsuarios) {
+            Query query = entityManager.createNativeQuery("SELECT * FROM usuarios_data WHERE id = :id", UsuarioData.class);
+            query.setParameter("id", id.intValue());
+            UsuarioData data = (UsuarioData) query.getSingleResult();
+
+            Usuario u = new Usuario();
+
+            u.setUsuario(data.getUsuario());
+            u.setPin(data.getPin());
+            u.setId(data.getId());
+            u.setTipo(data.getTipo());
+        }
+        return usuarios;
+    }
+    
+    private int idUsuarioUnico() {
+        for (int i = 0;; i++) {
+            boolean match = idUsuarioRepetido(i);
+            if (!match) {
+                return i;
+            }
+        }
+    }
+    
+    private boolean idUsuarioRepetido(int i) {
+        return baseDeDatosUsuarios.stream().anyMatch(u -> u.getId() == i);
+    }
+    
 }
