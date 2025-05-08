@@ -64,21 +64,33 @@ public class SalaRepository {
         return salas;
     }
 
+    @Transactional
     public Sala findSala(int id) {
-//        for (Sala s : baseDeDatosSalas) {
-//            if (s.getId() == id) {
-//                return s;
-//            }
-//        }
-//        return null;
-        return baseDeDatosSalas.stream()
-                .filter(s -> s.getId() == id)
-                .findAny()
-                .orElse(null);
+        Query query = entityManager.createNativeQuery("SELECT * FROM salas_data WHERE id = :id", SalaData.class);
+        query.setParameter("id", id);
+        SalaData data = null;
+        try {
+            data = (SalaData) query.getSingleResult();
+        } catch (Exception e) {
+            return null;
+        }
+        
+        List<Integer> idsFunciones = parseFuncionJSON(data.getFunciones());
+
+        Sala sala = new Sala();
+        sala.setId(data.getId());
+        sala.setAsientos(data.getAsientos());
+        sala.setFunciones(findFuncionesById(idsFunciones));
+        
+        return sala;
     }
 
+    @Transactional
     public void deleteSala(Sala sala) {
-        baseDeDatosSalas.remove(sala);
+        Integer id = sala.getId();
+        Query query = entityManager.createNativeQuery("DELETE FROM salas_data WHERE id = :id");
+        query.setParameter("id", id);
+        query.executeUpdate();
     }
 
     public int idFuncionUnica() {
