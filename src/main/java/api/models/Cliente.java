@@ -19,6 +19,8 @@ public class Cliente extends Usuario {
     public Cliente(String usuario, long pin) {
         super(usuario, pin);
     }
+    
+    public Cliente() {}
 
     @Override
     public String toString() {

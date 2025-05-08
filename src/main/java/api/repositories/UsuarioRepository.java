@@ -7,6 +7,7 @@ package api.repositories;
 import api.models.Cliente;
 import api.models.Usuario;
 import api.models.Usuario;
+import api.models.data.ClienteData;
 import api.models.data.UsuarioData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -33,8 +34,6 @@ public class UsuarioRepository {
     @PersistenceContext
     private EntityManager entityManager;
 
-    private final List<Usuario> baseDeDatosUsuarios = new ArrayList<>();
-
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(UsuarioRepository.class);
 
     @Transactional
@@ -57,6 +56,23 @@ public class UsuarioRepository {
         entityManager.persist(data);
         entityManager.flush();
         usuario.setId(data.getId());
+
+        if ("cliente".equalsIgnoreCase(data.getTipo())) {
+            ClienteData clienteData = new ClienteData();
+            clienteData.setIdUsuario(data.getId());
+
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                String tiquetesVacio = mapper.writeValueAsString(new ArrayList<>());
+                clienteData.setTiquetes(tiquetesVacio);
+            } catch (JsonProcessingException e) {
+                logger.error("Error serializando la lista de tiquetes vacía", e);
+                clienteData.setTiquetes("[]");
+            }
+
+            entityManager.persist(clienteData);
+            logger.info("ClienteData creado para el usuario '{}'", data.getUsuario());
+        }
     }
 
     public List<Usuario> getAllUsuarios() {
@@ -65,7 +81,6 @@ public class UsuarioRepository {
         List<Usuario> usuarios = new ArrayList<>();
 
         for (UsuarioData data : dataUsuarios) {
-            List<Integer> idsUsuarios = ParseUsuarioJSON(data.getUsuario());
 
             Usuario u = new Usuario();
 

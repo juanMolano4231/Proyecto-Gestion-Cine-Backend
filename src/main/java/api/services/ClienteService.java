@@ -28,11 +28,11 @@ public class ClienteService {
     }
 
     public List<Cliente> getAllClientes() {
-        List<Usuario> usuarios = usuarioService.getAllUsuarios();
-        return clienteRepository.getAllClientes(usuarios);
+        return clienteRepository.getAllClientes();
     }
 
-//    public Cliente postCliente(String user, Cliente cliente) {
-//        return usuarioService.postCliente(user, cliente);
-//    }
+    public Cliente updateCliente(int id, List<api.models.Tiquete> tiquetes) {
+        return clienteRepository.updateCliente(id, tiquetes);
+    }
+
 }
