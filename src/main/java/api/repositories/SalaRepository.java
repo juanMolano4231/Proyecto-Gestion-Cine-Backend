@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
+import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -36,11 +37,16 @@ public class SalaRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(SalaRepository.class);
 
+    @Transactional
     public void saveSala(Sala sala) {
-        sala.setId(idSalaUnica());
-        baseDeDatosSalas.add(sala);
+        SalaData data = new SalaData();
+        data.setAsientos(sala.getAsientos());
+        data.setFunciones(funcionesToJSON(sala.getFunciones()));
+        
+        entityManager.persist(data);
     }
 
+    @Transactional
     public List<Sala> getSalas() {
         Query query = entityManager.createNativeQuery("SELECT * FROM salas_data", SalaData.class);
         List<SalaData> dataSalas = query.getResultList();
@@ -182,6 +188,17 @@ public class SalaRepository {
         } catch (Exception e) {
             return null;
         }
+    }
+    
+    private String funcionesToJSON(List<Funcion> funciones) {
+        if (funciones == null || funciones.size() == 0) {
+            return "[]";
+        }
+        String JSON = "[";
+        for (Funcion f : funciones) {
+            JSON += f.getId() + ", ";
+        }
+        return JSON.substring(0, JSON.length() - 2) + "]";
     }
 
 }

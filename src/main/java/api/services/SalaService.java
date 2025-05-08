@@ -25,20 +25,6 @@ public class SalaService {
     @Autowired
     public SalaService(SalaRepository repository) {
         this.repository = repository;
-        initSampleData();
-    }
-
-    private void initSampleData() {
-        Sala s1 = new Sala(30);
-        saveSala(s1);
-        Sala s2 = new Sala(46);
-        saveSala(s2);  // PRIMERO GUARDAR SALA ANTES DE AÑADIR FUNCIONES PARA QUE LAS ID SE ASIGNEN CORRECTAMENTE
-
-        Funcion f = new Funcion("2025-05-12:14:15", "2025-05-12:15", "Zootopia", s2.getAsientos(), repository.idFuncionUnica());
-        f.getAsientos()[0] = true;
-        s2.getFunciones().add(f);
-        Funcion f2 = new Funcion("2025-05-13:16", "2025-05-13:17", "Big hero", s2.getAsientos(), repository.idFuncionUnica());
-        s2.getFunciones().add(f2);
     }
 
     public Sala saveSala(Sala sala) {
