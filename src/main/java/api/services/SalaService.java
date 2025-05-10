@@ -21,10 +21,12 @@ import org.springframework.stereotype.Service;
 public class SalaService {
 
     private final SalaRepository repository;
+    private final FuncionService funcionService;
 
     @Autowired
-    public SalaService(SalaRepository repository) {
+    public SalaService(SalaRepository repository, FuncionService funcionService) {
         this.repository = repository;
+        this.funcionService = funcionService;
     }
 
     public Sala saveSala(Sala sala) {
@@ -44,12 +46,14 @@ public class SalaService {
         repository.deleteSala(sala);
     }
 
-    public Funcion saveFuncion(int id, String[] datos) {
-        return repository.saveFuncion(id, datos);
+    public Funcion saveFuncion(int idSala, String[] datos) {
+        int idFuncion = funcionService.save(datos, idSala);
+        return repository.saveFuncion(idSala, idFuncion);
     }
 
     public Sala patchSala(int id, Sala sala) {
-        return repository.patchSala(id, sala);
+//        return repository.patchSala(id, sala);
+throw new UnsupportedOperationException();
     }
 
 }

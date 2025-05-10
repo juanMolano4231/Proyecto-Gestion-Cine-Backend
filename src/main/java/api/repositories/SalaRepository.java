@@ -125,42 +125,45 @@ public class SalaRepository {
         return baseDeDatosSalas.stream().anyMatch(s -> s.getId() == i);
     }
 
-    public Funcion saveFuncion(int id, String[] datos) {
-        Funcion funcion = null;
-        for (Sala s : baseDeDatosSalas) {
-            if (s.getId() == id) {
-                funcion = new Funcion(datos[1], datos[2], datos[0], s.getAsientos(), idFuncionUnica());
-                s.getFunciones().add(funcion);
-                return funcion;
-            }
+    @Transactional
+    public Funcion saveFuncion(int idSala, int idFuncion) {
+        Query getQuery = entityManager.createNativeQuery("SELECT * FROM salas_data WHERE id = :id", SalaData.class);
+        getQuery.setParameter("id", idSala);
+        SalaData sala = (SalaData) getQuery.getSingleResult();
+        
+        String funciones = sala.getFunciones();
+        if (funciones.equals("[]")) {
+            funciones = funciones.substring(0, funciones.length() - 1) + idFuncion + "]";
+        } else {
+            funciones = funciones.substring(0, funciones.length() - 1) + ", " + idFuncion + "]";
         }
-        return null;
-    }
+        
+        logger.info("funciones: {}", funciones);
+        
+        Query updateQuery = entityManager.createNativeQuery(
+                "UPDATE salas_data SET funciones = :funciones WHERE id = :idSala"
+        );
+        updateQuery.setParameter("funciones", funciones);
+        updateQuery.setParameter("idSala", idSala);
+        int updated = updateQuery.executeUpdate();
+        
+        if (updated > 0) {
+            Query funcionQuery = entityManager.createNativeQuery("SELECT * FROM funciones_data WHERE id = :id", FuncionData.class);
+            funcionQuery.setParameter("id", idFuncion);
+            FuncionData funcionData = (FuncionData) funcionQuery.getSingleResult();
 
-    private void print(String message) {
-        JOptionPane.showMessageDialog(null, message);
-    }
+            Funcion funcion = new Funcion();
 
-    public void printSalas() {
-        String message = "";
-        for (Sala s : baseDeDatosSalas) {
-            message += "Sala " + s.getId() + "\n";
-            for (Funcion f : s.getFunciones()) {
-                message += "    Funcion " + f.getId() + "\n";
-            }
+            funcion.setFin(funcionData.getFin());
+            funcion.setInicio(funcionData.getInicio());
+            funcion.setTitulo(funcionData.getTitulo());
+            funcion.setId(funcionData.getId());
+            funcion.setAsientos(parseBooleanJSON(funcionData.getAsientos()));
+
+            return funcion;
+        } else {
+            return null;
         }
-        print(message);
-    }
-
-    public Sala patchSala(int id, Sala sala) {
-        for (int i = 0; i < baseDeDatosSalas.size(); i++) {
-            Sala s = baseDeDatosSalas.get(i);
-            if (s.getId() == id) {
-                baseDeDatosSalas.set(i, sala);
-                return sala;
-            }
-        }
-        return null;
     }
 
     private List<Integer> parseFuncionJSON(String funciones) {
