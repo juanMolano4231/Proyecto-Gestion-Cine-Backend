@@ -16,12 +16,9 @@ import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import javax.swing.JOptionPane;
 import org.springframework.stereotype.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.EmptyResultDataAccessException;
 
 /**
  *
@@ -32,8 +29,6 @@ public class SalaRepository {
 
     @PersistenceContext
     private EntityManager entityManager;
-
-    private final List<Sala> baseDeDatosSalas = new ArrayList<>();
 
     private static final Logger logger = LoggerFactory.getLogger(SalaRepository.class);
 
@@ -93,38 +88,6 @@ public class SalaRepository {
         query.executeUpdate();
     }
 
-    public int idFuncionUnica() {
-        for (int i = 0;; i++) {
-            boolean unica = true;
-            for (Sala s : baseDeDatosSalas) {
-                boolean match = idFuncionRepetida(s, i);
-                if (match) {
-                    unica = false;
-                }
-            }
-            if (unica) {
-                return i;
-            }
-        }
-    }
-
-    private int idSalaUnica() {
-        for (int i = 0;; i++) {
-            boolean match = idSalaRepetida(i);
-            if (!match) {
-                return i;
-            }
-        }
-    }
-
-    private boolean idFuncionRepetida(Sala s, int i) {
-        return s.getFunciones().stream().anyMatch(f -> f.getId() == i);
-    }
-
-    private boolean idSalaRepetida(int i) {
-        return baseDeDatosSalas.stream().anyMatch(s -> s.getId() == i);
-    }
-
     @Transactional
     public Funcion saveFuncion(int idSala, int idFuncion) {
         Query getQuery = entityManager.createNativeQuery("SELECT * FROM salas_data WHERE id = :id", SalaData.class);
@@ -180,7 +143,7 @@ public class SalaRepository {
         ArrayList<Funcion> funciones = new ArrayList<>();
         for (Integer id : idsFunciones) {
             Query query = entityManager.createNativeQuery("SELECT * FROM funciones_data WHERE id = :id", FuncionData.class);
-            query.setParameter("id", id.intValue());
+            query.setParameter("id", id);
             FuncionData data = (FuncionData) query.getSingleResult(); // Si no hay tira EmptyResultDataAccessException 
 
             Funcion f = new Funcion();
@@ -206,7 +169,7 @@ public class SalaRepository {
     }
 
     private String funcionesToJSON(List<Funcion> funciones) {
-        if (funciones == null || funciones.size() == 0) {
+        if (funciones == null || funciones.isEmpty()) {
             return "[]";
         }
         String JSON = "[";
