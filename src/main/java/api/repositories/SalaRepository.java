@@ -42,7 +42,7 @@ public class SalaRepository {
         SalaData data = new SalaData();
         data.setAsientos(sala.getAsientos());
         data.setFunciones(funcionesToJSON(sala.getFunciones()));
-        
+
         entityManager.persist(data);
     }
 
@@ -74,14 +74,14 @@ public class SalaRepository {
         } catch (Exception e) {
             return null;
         }
-        
+
         List<Integer> idsFunciones = parseFuncionJSON(data.getFunciones());
 
         Sala sala = new Sala();
         sala.setId(data.getId());
         sala.setAsientos(data.getAsientos());
         sala.setFunciones(findFuncionesById(idsFunciones));
-        
+
         return sala;
     }
 
@@ -130,23 +130,23 @@ public class SalaRepository {
         Query getQuery = entityManager.createNativeQuery("SELECT * FROM salas_data WHERE id = :id", SalaData.class);
         getQuery.setParameter("id", idSala);
         SalaData sala = (SalaData) getQuery.getSingleResult();
-        
+
         String funciones = sala.getFunciones();
         if (funciones.equals("[]")) {
             funciones = funciones.substring(0, funciones.length() - 1) + idFuncion + "]";
         } else {
             funciones = funciones.substring(0, funciones.length() - 1) + ", " + idFuncion + "]";
         }
-        
+
         logger.info("funciones: {}", funciones);
-        
+
         Query updateQuery = entityManager.createNativeQuery(
                 "UPDATE salas_data SET funciones = :funciones WHERE id = :idSala"
         );
         updateQuery.setParameter("funciones", funciones);
         updateQuery.setParameter("idSala", idSala);
         int updated = updateQuery.executeUpdate();
-        
+
         if (updated > 0) {
             Query funcionQuery = entityManager.createNativeQuery("SELECT * FROM funciones_data WHERE id = :id", FuncionData.class);
             funcionQuery.setParameter("id", idFuncion);
@@ -204,7 +204,7 @@ public class SalaRepository {
             return null;
         }
     }
-    
+
     private String funcionesToJSON(List<Funcion> funciones) {
         if (funciones == null || funciones.size() == 0) {
             return "[]";
@@ -214,6 +214,16 @@ public class SalaRepository {
             JSON += f.getId() + ", ";
         }
         return JSON.substring(0, JSON.length() - 2) + "]";
+    }
+
+    @Transactional
+    public Sala patchSala(int id, Sala sala) {
+        Query query = entityManager.createNativeQuery("UPDATE salas_data SET asientos = :asientos, funciones = :funciones WHERE id = :id");
+        query.setParameter("asientos", sala.getAsientos());
+        query.setParameter("funciones", funcionesToJSON(sala.getFunciones()));
+        query.setParameter("id", id);
+        int success = query.executeUpdate();
+        return success > 0 ? sala : null;
     }
 
 }

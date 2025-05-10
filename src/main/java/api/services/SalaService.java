@@ -52,8 +52,7 @@ public class SalaService {
     }
 
     public Sala patchSala(int id, Sala sala) {
-//        return repository.patchSala(id, sala);
-throw new UnsupportedOperationException();
+        return repository.patchSala(id, sala);
     }
 
 }
