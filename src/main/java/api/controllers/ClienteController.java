@@ -55,5 +55,11 @@ public class ClienteController {
         }
         return ResponseEntity.ok(actualizado);
     }
+    
+    @Transactional
+    @PostMapping
+    public Usuario createCliente(@RequestBody @Parameter(description = "Datos del cliente a crear") Usuario cliente) {
+        return service.saveCliente(cliente);
+    }
 
 }
