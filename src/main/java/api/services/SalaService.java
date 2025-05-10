@@ -4,12 +4,10 @@
  */
 package api.services;
 
-import api.controllers.SalaController;
 import api.repositories.SalaRepository;
 import api.models.Funcion;
 import api.models.Sala;
 import java.util.List;
-import javax.swing.JOptionPane;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,24 +19,12 @@ import org.springframework.stereotype.Service;
 public class SalaService {
 
     private final SalaRepository repository;
+    private final FuncionService funcionService;
 
     @Autowired
-    public SalaService(SalaRepository repository) {
+    public SalaService(SalaRepository repository, FuncionService funcionService) {
         this.repository = repository;
-        initSampleData();
-    }
-
-    private void initSampleData() {
-        Sala s1 = new Sala(30);
-        saveSala(s1);
-        Sala s2 = new Sala(46);
-        saveSala(s2);  // PRIMERO GUARDAR SALA ANTES DE AÑADIR FUNCIONES PARA QUE LAS ID SE ASIGNEN CORRECTAMENTE
-
-        Funcion f = new Funcion("2025-05-12:14:15", "2025-05-12:15", "Zootopia", s2.getAsientos(), repository.idFuncionUnica());
-        f.getAsientos()[0] = true;
-        s2.getFunciones().add(f);
-        Funcion f2 = new Funcion("2025-05-13:16", "2025-05-13:17", "Big hero", s2.getAsientos(), repository.idFuncionUnica());
-        s2.getFunciones().add(f2);
+        this.funcionService = funcionService;
     }
 
     public Sala saveSala(Sala sala) {
@@ -58,8 +44,9 @@ public class SalaService {
         repository.deleteSala(sala);
     }
 
-    public Funcion saveFuncion(int id, String[] datos) {
-        return repository.saveFuncion(id, datos);
+    public Funcion saveFuncion(int idSala, String[] datos) {
+        int idFuncion = funcionService.save(datos, idSala);
+        return repository.saveFuncion(idSala, idFuncion);
     }
 
     public Sala patchSala(int id, Sala sala) {
