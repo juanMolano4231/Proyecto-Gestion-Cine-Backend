@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -34,7 +35,13 @@ public class UsuarioRepository {
     @PersistenceContext
     private EntityManager entityManager;
 
+    private final PasswordEncoder passwordEncoder;
+
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(UsuarioRepository.class);
+
+    public UsuarioRepository(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Transactional
     public void saveUsuario(Usuario usuario) {
@@ -50,7 +57,7 @@ public class UsuarioRepository {
 
         UsuarioData data = new UsuarioData();
         data.setUsuario(usuario.getUsuario());
-        data.setPin(usuario.getPin());
+        data.setPin(passwordEncoder.encode(usuario.getPin()));
         data.setTipo(usuario.getTipo() == null || usuario.getTipo().isBlank() ? "cliente" : usuario.getTipo());
 
         entityManager.persist(data);
@@ -73,6 +80,14 @@ public class UsuarioRepository {
             entityManager.persist(clienteData);
             logger.info("ClienteData creado para el usuario '{}'", data.getUsuario());
         }
+    }
+
+    public Usuario login(String username, String rawPin) {
+        Usuario usuario = findByUser(username);
+        if (usuario == null) {
+            return null;
+        }
+        return passwordEncoder.matches(rawPin, usuario.getPin()) ? usuario : null;
     }
 
     public List<Usuario> getAllUsuarios() {

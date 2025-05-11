@@ -45,7 +45,7 @@ public class ClienteController {
 
     @Transactional
     @PutMapping("/{id}")
-    public ResponseEntity<Cliente> updateClienteTiquetes(
+    public ResponseEntity<Cliente> postCliente(
             @PathVariable int id,
             @RequestBody List<api.models.Tiquete> nuevosTiquetes) {
 

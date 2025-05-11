@@ -17,7 +17,11 @@ import jakarta.persistence.Query;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.bind.annotation.RequestBody;
 
 /**
  *

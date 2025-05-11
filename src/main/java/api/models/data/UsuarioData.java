@@ -27,7 +27,7 @@ public class UsuarioData {
     private String usuario;
     
     @Column(nullable = false)
-    private Long pin;
+    private String pin;
     
     @Column(nullable = false)
     private String tipo;
@@ -50,11 +50,11 @@ public class UsuarioData {
         this.usuario = usuario;
     }
 
-    public Long getPin() {
+    public String getPin() {
         return pin;
     }
 
-    public void setPin(Long pin) {
+    public void setPin(String pin) {
         this.pin = pin;
     }
 

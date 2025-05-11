@@ -13,10 +13,10 @@ public class Usuario {
     
     private int id;
     private String usuario;
-    private long pin;
+    private String pin;
     private String tipo;
 
-    public Usuario(String usuario, long pin) {
+    public Usuario(String usuario, String pin) {
         this.usuario = usuario;
         this.pin = pin;
     }
@@ -36,11 +36,11 @@ public class Usuario {
         this.usuario = usuario;
     }
 
-    public long getPin() {
+    public String getPin() {
         return pin;
     }
 
-    public void setPin(long pin) {
+    public void setPin(String pin) {
         this.pin = pin;
     }
 

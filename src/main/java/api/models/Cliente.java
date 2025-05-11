@@ -16,7 +16,7 @@ public class Cliente extends Usuario {
 
     private List<Tiquete> tiquetes = new ArrayList<>();
     
-    public Cliente(String usuario, long pin) {
+    public Cliente(String usuario, String pin) {
         super(usuario, pin);
     }
     
