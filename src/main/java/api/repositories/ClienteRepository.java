@@ -42,13 +42,12 @@ public class ClienteRepository {
         List<ClienteData> dataClientes = queryClientes.getResultList();
 
         for (ClienteData data : dataClientes) {
-            Usuario u = findByIdUser(data.getIdUsuario());
+            UsuarioData u = findUserDataById(data.getIdUsuario());
             if (u == null) {
+                logger.warn("No se pudo encontrar el usuario correspondiente al cliente: {}", data.getId());
                 continue;
             }
             Cliente c = new Cliente(u.getUsuario(), u.getPin());
-            c.setId(u.getId());
-            c.setTipo(u.getTipo());
 
             try {
                 ObjectMapper mapper = new ObjectMapper();
@@ -57,6 +56,7 @@ public class ClienteRepository {
                 c.setTiquetes(tiquetes);
             } catch (Exception e) {
                 c.setTiquetes(List.of());
+                logger.warn("La lista de tiquetes del cliente: {} no se pudo parsear", data.getId());
             }
 
             clientes.add(c);
@@ -64,24 +64,35 @@ public class ClienteRepository {
 
         return clientes;
     }
-
-    public Usuario findByIdUser(int id) {
+    
+    public UsuarioData findUserDataById(int id) {
         Query query = entityManager.createNativeQuery("SELECT * FROM usuarios_data WHERE id = :id", UsuarioData.class);
         query.setParameter("id", id);
 
-        List<UsuarioData> result = query.getResultList();
-        if (result.isEmpty()) {
-            return null;
+        UsuarioData usu = null;
+        try {
+            usu = (UsuarioData) query.getSingleResult();
+        } catch (Exception e) {
         }
-        return convertir(result.get(0));
+        return usu;
+    }
+
+    public Usuario findUserById(int id) {
+        Query query = entityManager.createNativeQuery("SELECT * FROM usuarios_data WHERE id = :id", UsuarioData.class);
+        query.setParameter("id", id);
+
+        Usuario usu = null;
+        try {
+            usu = convertir((UsuarioData) query.getSingleResult());
+        } catch (Exception e) {
+        }
+        return usu;
     }
 
     public Usuario convertir(UsuarioData data) {
         Usuario u = new Usuario();
-        u.setId(data.getId());
         u.setUsuario(data.getUsuario());
         u.setPin(data.getPin());
-        u.setTipo(data.getTipo());
 
         return u;
     }
@@ -106,14 +117,14 @@ public class ClienteRepository {
             clienteData.setTiquetes(tiquetesJson);
             entityManager.merge(clienteData);
 
-            Usuario usuarioBase = findByIdUser(idUsuario);
+            Usuario usuarioBase = findUserById(idUsuario);
             if (usuarioBase == null) {
                 return null;
             }
 
             Cliente cliente = new Cliente(usuarioBase.getUsuario(), usuarioBase.getPin());
-            cliente.setId(usuarioBase.getId());
-            cliente.setTipo(usuarioBase.getTipo());
+//            cliente.setId(usuarioBase.getId());
+//            cliente.setTipo(usuarioBase.getTipo());
             cliente.setTiquetes(nuevosTiquetes);
 
             return cliente;

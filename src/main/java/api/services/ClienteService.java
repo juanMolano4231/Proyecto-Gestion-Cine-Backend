@@ -35,9 +35,8 @@ public class ClienteService {
         return clienteRepository.updateCliente(id, tiquetes);
     }
 
-    public Usuario saveCliente(Usuario usuario) {
-        usuarioService.saveUsuario(usuario);
-        return usuario;
+    public Cliente saveCliente(Cliente cliente) {
+        return (Cliente) usuarioService.saveUsuario(cliente);
     }
 
 }

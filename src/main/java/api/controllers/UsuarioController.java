@@ -33,16 +33,14 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Juan José Molano Franco
  */
 @RestController
-@RequestMapping("/api/usuarios_data")
+@RequestMapping("/api/usuarios")
 @Tag(name = "Usuarios", description = "API para la gestión de usuarios")
 public class UsuarioController {
 
-    private final PasswordEncoder passwordEncoder;
     private final UsuarioService service;
 
     @Autowired
     public UsuarioController(PasswordEncoder passwordEncoder, UsuarioService usuarioService) {
-        this.passwordEncoder = passwordEncoder;
         this.service = usuarioService;
     }
 
@@ -50,11 +48,7 @@ public class UsuarioController {
     @PostMapping("/login")
     public ResponseEntity<Usuario> login(@RequestBody Usuario usuario) {
         Usuario user = service.login(usuario.getUsuario(), usuario.getPin());
-        if (user != null) {
-            user.setPin(null);
-            return ResponseEntity.ok(user);
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return user == null ? ResponseEntity.status(HttpStatus.UNAUTHORIZED).build() : ResponseEntity.ok(user);
     }
 
     @Transactional
@@ -64,23 +58,23 @@ public class UsuarioController {
     }
 
     @Transactional
-    @PostMapping
-    public Usuario createUsuario(@RequestBody @Parameter(description = "Datos del usuario a crear") Usuario usuario) {
-        return service.saveUsuario(usuario);
-    }
-
-    @Transactional
     @GetMapping("/{user}")
     public ResponseEntity<Usuario> getUsuarioPorUser(@PathVariable String user) {
         Usuario u = service.findByUser(user);
         return u != null ? ResponseEntity.ok(u) : ResponseEntity.notFound().build();
     }
 
+//    @Transactional
+//    @PutMapping("/{user}")
+//    public ResponseEntity<Usuario> updateUsuario(@PathVariable String user, @RequestBody Usuario usuario) {
+//        Usuario actualizado = service.updateUsuario(user, usuario);
+//        return actualizado != null ? ResponseEntity.ok(actualizado) : ResponseEntity.notFound().build();
+//    }
+    
     @Transactional
-    @PutMapping("/{user}")
-    public ResponseEntity<Usuario> updateUsuario(@PathVariable String user, @RequestBody Usuario usuario) {
-        Usuario actualizado = service.updateUsuario(user, usuario);
-        return actualizado != null ? ResponseEntity.ok(actualizado) : ResponseEntity.notFound().build();
+    @GetMapping("/consultarTipo/{user}")
+    public ResponseEntity<String> consultarTipo(@PathVariable String user) {
+        String tipo = service.consultarTipo(user);
+        return tipo != null ? ResponseEntity.ok(tipo) : ResponseEntity.notFound().build();
     }
-
 }

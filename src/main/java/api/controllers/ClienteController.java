@@ -16,6 +16,7 @@ import jakarta.transaction.Transactional;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
  * @author johan
  */
 @RestController
-@RequestMapping("/api/clientes_data")
+@RequestMapping("/api/clientes")
 @Tag(name = "Clientes", description = "API para la gestión de clientes")
 public class ClienteController {
 
@@ -58,8 +59,9 @@ public class ClienteController {
     
     @Transactional
     @PostMapping
-    public Usuario createCliente(@RequestBody @Parameter(description = "Datos del cliente a crear") Usuario cliente) {
-        return service.saveCliente(cliente);
+    public ResponseEntity<Cliente> createCliente(@RequestBody @Parameter(description = "Datos del cliente a crear") Cliente cliente) {
+        Cliente c =  service.saveCliente(cliente);
+        return c == null ? ResponseEntity.badRequest().build() : ResponseEntity.ok(cliente);
     }
 
 }

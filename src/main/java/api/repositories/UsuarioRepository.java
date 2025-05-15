@@ -4,6 +4,7 @@
  */
 package api.repositories;
 
+import api.models.Administrador;
 import api.models.Cliente;
 import api.models.Usuario;
 import api.models.Usuario;
@@ -44,42 +45,39 @@ public class UsuarioRepository {
     }
 
     @Transactional
-    public void saveUsuario(Usuario usuario) {
+    public Usuario saveUsuario(Usuario usuario) {
         if (usuario == null || usuario.getUsuario() == null) {
             logger.warn("Usuario nulo o sin nombre de usuario, no se puede guardar.");
-            return;
+            return null;
         }
 
         if (findByUser(usuario.getUsuario()) != null) {
             logger.info("El usuario '{}' ya existe, se omite la inserción.", usuario.getUsuario());
-            return;
+            return null;
         }
 
         UsuarioData data = new UsuarioData();
         data.setUsuario(usuario.getUsuario());
         data.setPin(passwordEncoder.encode(usuario.getPin()));
-        data.setTipo(usuario.getTipo() == null || usuario.getTipo().isBlank() ? "cliente" : usuario.getTipo());
-
+        if (usuario instanceof Administrador) {
+            data.setTipo("admin");
+        } else {
+            data.setTipo("cliente");
+        }
+        
         entityManager.persist(data);
         entityManager.flush();
-        usuario.setId(data.getId());
 
         if ("cliente".equalsIgnoreCase(data.getTipo())) {
             ClienteData clienteData = new ClienteData();
             clienteData.setIdUsuario(data.getId());
-
-            try {
-                ObjectMapper mapper = new ObjectMapper();
-                String tiquetesVacio = mapper.writeValueAsString(new ArrayList<>());
-                clienteData.setTiquetes(tiquetesVacio);
-            } catch (JsonProcessingException e) {
-                logger.error("Error serializando la lista de tiquetes vacía", e);
-                clienteData.setTiquetes("[]");
-            }
+            clienteData.setTiquetes("[]");
 
             entityManager.persist(clienteData);
             logger.info("ClienteData creado para el usuario '{}'", data.getUsuario());
         }
+        
+        return usuario;
     }
 
     public Usuario login(String username, String rawPin) {
@@ -96,13 +94,10 @@ public class UsuarioRepository {
         List<Usuario> usuarios = new ArrayList<>();
 
         for (UsuarioData data : dataUsuarios) {
-
             Usuario u = new Usuario();
 
-            u.setId(data.getId());
             u.setUsuario(data.getUsuario());
             u.setPin(data.getPin());
-            u.setTipo(data.getTipo());
 
             usuarios.add(u);
         }
@@ -112,44 +107,42 @@ public class UsuarioRepository {
     public Usuario findByUser(String usuario) {
         Query query = entityManager.createNativeQuery("SELECT * FROM usuarios_data WHERE usuario = :usuario", UsuarioData.class);
         query.setParameter("usuario", usuario);
-
-        List<UsuarioData> result = query.getResultList();
-        if (result.isEmpty()) {
-            return null;
+        Usuario usu = null;
+        try {
+            usu = convertir((UsuarioData) query.getSingleResult());
+        } catch (Exception e) {
         }
-        return convertir(result.get(0));
+        return usu;
     }
 
     public Usuario convertir(UsuarioData data) {
         Usuario u = new Usuario();
-        u.setId(data.getId());
         u.setUsuario(data.getUsuario());
         u.setPin(data.getPin());
-        u.setTipo(data.getTipo());
 
         return u;
     }
 
-    public Usuario updateUsuario(String user, Usuario usuario) {
-        Usuario existente = findByUser(user);
-        if (existente != null) {
-            existente.setPin(usuario.getPin());
-            existente.setUsuario(usuario.getUsuario());
-            UsuarioData data = entityManager.find(UsuarioData.class, existente.getId());
-
-            if (data == null) {
-                return null;
-            }
-
-            data.setUsuario(usuario.getUsuario());
-            data.setPin(usuario.getPin());
-            data.setTipo(usuario.getTipo() != null ? usuario.getTipo() : "cliente");
-
-            entityManager.merge(data);
-            return convertir(data);
-        }
-        return null;
-    }
+//    public Usuario updateUsuario(String user, Usuario usuario) {
+//        Usuario existente = findByUser(user);
+//        if (existente != null) {
+//            existente.setPin(usuario.getPin());
+//            existente.setUsuario(usuario.getUsuario());
+//            UsuarioData data = entityManager.find(UsuarioData.class, existente.getId());
+//
+//            if (data == null) {
+//                return null;
+//            }
+//
+//            data.setUsuario(usuario.getUsuario());
+//            data.setPin(usuario.getPin());
+//            data.setTipo(usuario.getTipo() != null ? usuario.getTipo() : "cliente");
+//
+//            entityManager.merge(data);
+//            return convertir(data);
+//        }
+//        return null;
+//    }
 
 //    public Cliente postCliente(String user, Cliente cliente) {
 //        for (int i = 0; i < baseDeDatosUsuarios.size(); i++) {
@@ -172,6 +165,18 @@ public class UsuarioRepository {
         } catch (JsonProcessingException ex) {
             return null;
         }
+    }
+
+    public String consultarTipo(String user) {
+        Query query = entityManager.createNativeQuery("SELECT * FROM usuarios_data WHERE usuario = :usuario", UsuarioData.class);
+        query.setParameter("usuario", user);
+        UsuarioData data = null;
+        try {
+            data = (UsuarioData) query.getSingleResult();
+        } catch (Exception e) {
+            return null;
+        }
+        return '"' + data.getTipo() + '"';
     }
 
 }

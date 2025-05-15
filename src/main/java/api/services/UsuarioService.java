@@ -31,15 +31,12 @@ public class UsuarioService {
     private void initSampleData() {
         Usuario juan = new Administrador("juan1234", String.valueOf(1234));
         Usuario johan = new Cliente("johan1234", String.valueOf(1234));
-        juan.setTipo("admin");
-        johan.setTipo("cliente");
         saveUsuario(juan);
         saveUsuario(johan);
     }
 
     public Usuario saveUsuario(Usuario usuario) {
-        repository.saveUsuario(usuario);
-        return usuario;
+        return repository.saveUsuario(usuario);
     }
 
     public Usuario login(String username, String pin) {
@@ -54,11 +51,15 @@ public class UsuarioService {
         return repository.findByUser(user);
     }
 
-    public Usuario updateUsuario(String user, Usuario usuario) {
-        return repository.updateUsuario(user, usuario);
-    }
+//    public Usuario updateUsuario(String user, Usuario usuario) {
+//        return repository.updateUsuario(user, usuario);
+//    }
 
 //    Cliente postCliente(String user, Cliente cliente) {
 //        return repository.postCliente(user, cliente);
 //    }
+
+    public String consultarTipo(String user) {
+        return repository.consultarTipo(user);
+    }
 }

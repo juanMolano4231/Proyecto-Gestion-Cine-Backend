@@ -11,10 +11,8 @@ package api.models;
  */
 public class Usuario {
     
-    private int id;
     private String usuario;
     private String pin;
-    private String tipo;
 
     public Usuario(String usuario, String pin) {
         this.usuario = usuario;
@@ -43,23 +41,5 @@ public class Usuario {
     public void setPin(String pin) {
         this.pin = pin;
     }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getTipo() {
-        return tipo;
-    }
-
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
-    }
-    
-    
 
 }
