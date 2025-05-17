@@ -5,7 +5,6 @@
 package api.services;
 
 import api.models.Cliente;
-import api.models.Usuario;
 import api.repositories.ClienteRepository;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +30,8 @@ public class ClienteService {
         return clienteRepository.getAllClientes();
     }
 
-    public Cliente updateCliente(int id, List<api.models.Tiquete> tiquetes) {
-        return clienteRepository.updateCliente(id, tiquetes);
+    public Cliente updateCliente(String user, Cliente cliente) {
+        return clienteRepository.updateCliente(user, cliente);
     }
 
     public Cliente saveCliente(Cliente cliente) {

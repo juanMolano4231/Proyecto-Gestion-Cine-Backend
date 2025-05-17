@@ -5,18 +5,13 @@
 package api.controllers;
 
 import api.models.Cliente;
-import api.models.Usuario;
 import api.services.ClienteService;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,7 +29,6 @@ public class ClienteController {
     @Autowired
     public ClienteController(ClienteService service) {
         this.service = service;
-        System.out.println(">>> ClienteController inicializado");
 
     }
 
@@ -45,12 +39,12 @@ public class ClienteController {
     }
 
     @Transactional
-    @PutMapping("/{id}")
+    @PostMapping("/{user}")
     public ResponseEntity<Cliente> postCliente(
-            @PathVariable int id,
-            @RequestBody List<api.models.Tiquete> nuevosTiquetes) {
+            @PathVariable String user,
+            @RequestBody Cliente cliente) {
 
-        Cliente actualizado = service.updateCliente(id, nuevosTiquetes);
+        Cliente actualizado = service.updateCliente(user, cliente);
         if (actualizado == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
