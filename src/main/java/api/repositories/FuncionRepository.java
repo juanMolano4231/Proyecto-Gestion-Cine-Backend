@@ -5,12 +5,18 @@
 
 package api.repositories;
 
+import api.models.Funcion;
 import api.models.data.FuncionData;
 import api.models.data.SalaData;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -54,6 +60,25 @@ public class FuncionRepository {
             JSON += arr[i] + ", ";
         }
         return JSON.substring(0, JSON.length() - 2) + "]";
+    }
+
+    @Transactional
+    public Funcion updateFuncion(int idFuncion, Funcion funcion) {
+        Query query = entityManager.createNativeQuery("UPDATE funciones_data SET asientos = :asientos WHERE id = :id", FuncionData.class);
+        query.setParameter("asientos", asientosToJSON(funcion.getAsientos()));
+        query.setParameter("id", idFuncion);
+        int success = query.executeUpdate();
+        return success > 0 ? funcion : null;
+    }
+
+    private String asientosToJSON(boolean[] asientos) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            return mapper.writeValueAsString(asientos);
+        } catch (JsonProcessingException ex) {
+            ex.printStackTrace();
+            return null;
+        }
     }
 
 }

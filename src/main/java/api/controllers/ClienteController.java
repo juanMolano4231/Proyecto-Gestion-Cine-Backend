@@ -5,13 +5,10 @@
 package api.controllers;
 
 import api.models.Cliente;
-import api.models.Usuario;
 import api.services.ClienteService;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,33 +29,33 @@ public class ClienteController {
     @Autowired
     public ClienteController(ClienteService service) {
         this.service = service;
+
     }
 
+    @Transactional
     @GetMapping
-    @Operation(summary = "Obtener todos los clientes", description = "Devuelve una lista de todos los clientes registrados.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Lista de clientes obtenida con éxito"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
-    })
-    public ResponseEntity<List<Cliente>> getAllClientes() {
-        List<Cliente> clientes = service.getAllClientes();
-        return new ResponseEntity<>(clientes, HttpStatus.OK);
+    public List<Cliente> getAllClientes() {
+        return service.getAllClientes();
+    }
+
+    @Transactional
+    @PostMapping("/{user}")
+    public ResponseEntity<Cliente> postCliente(
+            @PathVariable String user,
+            @RequestBody Cliente cliente) {
+
+        Cliente actualizado = service.updateCliente(user, cliente);
+        if (actualizado == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(actualizado);
     }
     
-//    @PostMapping("/{user}")
-//    @Operation(summary = "Actualizar cliente", description = "Actualiza un cliente según los datos proporcionados.")
-//    @ApiResponses(value = {
-//        @ApiResponse(responseCode = "201", description = " Cliente actualizado con éxito"),
-//        @ApiResponse(responseCode = "400", description = "Datos inválidos")
-//    })
-//    public ResponseEntity<Cliente> postCliente(@PathVariable @Parameter(description = "Username del cliente") String user,
-//            @RequestBody @Parameter(description = "Datos del cliente a actualizar") Cliente cliente) {
-//        Cliente nuevoCliente = service.postCliente(user, cliente);
-//        if (nuevoCliente == null) {
-//            return new ResponseEntity<>(nuevoCliente, HttpStatus.BAD_REQUEST);
-//        } else {
-//            return new ResponseEntity<>(nuevoCliente, HttpStatus.CREATED);
-//        }
-//    }
+    @Transactional
+    @PostMapping
+    public ResponseEntity<Cliente> createCliente(@RequestBody @Parameter(description = "Datos del cliente a crear") Cliente cliente) {
+        Cliente c =  service.saveCliente(cliente);
+        return c == null ? ResponseEntity.badRequest().build() : ResponseEntity.ok(cliente);
+    }
 
 }

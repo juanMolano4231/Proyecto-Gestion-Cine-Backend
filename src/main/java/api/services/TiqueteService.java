@@ -5,8 +5,8 @@
 
 package api.services;
 
-import api.models.Funcion;
-import api.repositories.FuncionRepository;
+import api.models.data.TiqueteData;
+import api.repositories.TiqueteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,20 +16,17 @@ import org.springframework.stereotype.Service;
  */
 
 @Service
-public class FuncionService {
-
-    private final FuncionRepository repository;
+public class TiqueteService {
     
+    private final TiqueteRepository repository;
+
     @Autowired
-    public FuncionService(FuncionRepository repository) {
+    public TiqueteService(TiqueteRepository repository) {
         this.repository = repository;
     }
-
-    int save(String[] datos, int idSala) {
-        return repository.save(datos, idSala);
+    
+    public boolean deleteTiquete(int idFuncion, int asiento) {
+        return repository.deleteTiquete(idFuncion, asiento);
     }
 
-    public Funcion updateFuncion(int idFuncion, Funcion funcion) {
-        return repository.updateFuncion(idFuncion, funcion);
-    }
 }
