@@ -7,13 +7,16 @@ package api.controllers;
 import api.services.UsuarioService;
 import api.models.Usuario;
 import api.models.data.UsuarioData;
+import api.services.JWTService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.transaction.Transactional;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,17 +41,30 @@ import org.springframework.web.bind.annotation.RestController;
 public class UsuarioController {
 
     private final UsuarioService service;
+    private final JWTService jwtService;
 
     @Autowired
     public UsuarioController(PasswordEncoder passwordEncoder, UsuarioService usuarioService) {
+        this.jwtService = new JWTService();
         this.service = usuarioService;
     }
 
     @Transactional
     @PostMapping("/login")
-    public ResponseEntity<Usuario> login(@RequestBody Usuario usuario) {
+    public ResponseEntity<?> login(@RequestBody Usuario usuario) {
         Usuario user = service.login(usuario.getUsuario(), usuario.getPin());
-        return user == null ? ResponseEntity.status(HttpStatus.UNAUTHORIZED).build() : ResponseEntity.ok(user);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        }
+
+        String jwt = jwtService.generarToken(user);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", jwt);
+        response.put("usuario", user);
+
+        return ResponseEntity.ok(response);
     }
 
     @Transactional
@@ -70,11 +86,11 @@ public class UsuarioController {
 //        Usuario actualizado = service.updateUsuario(user, usuario);
 //        return actualizado != null ? ResponseEntity.ok(actualizado) : ResponseEntity.notFound().build();
 //    }
-    
     @Transactional
     @GetMapping("/consultarTipo/{user}")
     public ResponseEntity<String> consultarTipo(@PathVariable String user) {
         String tipo = service.consultarTipo(user);
         return tipo != null ? ResponseEntity.ok(tipo) : ResponseEntity.notFound().build();
     }
+
 }
