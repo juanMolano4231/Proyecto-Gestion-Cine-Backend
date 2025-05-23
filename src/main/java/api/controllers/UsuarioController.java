@@ -82,7 +82,7 @@ public class UsuarioController {
         String tipo = service.consultarTipo(user);
         return tipo != null ? ResponseEntity.ok(tipo) : ResponseEntity.notFound().build();
     }
-    
+
     @GetMapping("/checkUsername/{user}")
     public ResponseEntity<Boolean> checkUsername(@PathVariable String user) {
         Boolean disponible = service.checkUsername(user);
