@@ -62,4 +62,8 @@ public class UsuarioService {
     public String consultarTipo(String user) {
         return repository.consultarTipo(user);
     }
+
+    public Boolean checkUsername(String user) {
+        return repository.checkUsername(user);
+    }
 }
