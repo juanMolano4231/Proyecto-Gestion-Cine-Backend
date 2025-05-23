@@ -239,30 +239,31 @@ public class ClienteRepository {
         Query queryCliente = entityManager.createNativeQuery("SELECT * FROM clientes_data WHERE id_usuario = :idUsuario", ClienteData.class);
         queryCliente.setParameter("id_usuario", usuarioData.getId());
         ClienteData clienteData = null;
-        try {
-            clienteData = ()
-        } catch (Exception e) {
-        }
-        
-        List<Cliente> clientes = new ArrayList<>();
-
-        Query queryClientes = entityManager.createNativeQuery("SELECT * FROM clientes_data", ClienteData.class);
-        List<ClienteData> dataClientes = queryClientes.getResultList();
-
-        for (ClienteData data : dataClientes) {
-            UsuarioData u = findUserDataById(data.getIdUsuario());
-            if (u == null) {
-                logger.warn("No se pudo encontrar el usuario correspondiente al cliente: {}", data.getId());
-                continue;
-            }
-            Cliente c = new Cliente(u.getUsuario(), u.getPin());
-
-            c.setTiquetes(JSONATiquetes(data.getTiquetes(), data.getIdUsuario()));
-
-            clientes.add(c);
-        }
-
-        return clientes;
+//        try {
+//            clienteData = ()
+//        } catch (Exception e) {
+//        }
+//        
+//        List<Cliente> clientes = new ArrayList<>();
+//
+//        Query queryClientes = entityManager.createNativeQuery("SELECT * FROM clientes_data", ClienteData.class);
+//        List<ClienteData> dataClientes = queryClientes.getResultList();
+//
+//        for (ClienteData data : dataClientes) {
+//            UsuarioData u = findUserDataById(data.getIdUsuario());
+//            if (u == null) {
+//                logger.warn("No se pudo encontrar el usuario correspondiente al cliente: {}", data.getId());
+//                continue;
+//            }
+//            Cliente c = new Cliente(u.getUsuario(), u.getPin());
+//
+//            c.setTiquetes(JSONATiquetes(data.getTiquetes(), data.getIdUsuario()));
+//
+//            clientes.add(c);
+//        }
+//
+//        return clientes;
+return null;
     }
 
 }
