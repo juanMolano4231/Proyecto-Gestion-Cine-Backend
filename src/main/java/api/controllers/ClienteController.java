@@ -75,7 +75,7 @@ public class ClienteController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        Cliente cliente = service.getClienteByUsername(user);
+        Cliente actualizado = service.getClienteByUsername(user);
         if (actualizado == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
