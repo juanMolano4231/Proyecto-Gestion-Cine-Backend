@@ -46,11 +46,6 @@ public class UsuarioController {
 
     @Transactional
     @PostMapping("/login")
-    @Operation(summary = "Iniciar sesion", description = "Se provee el nombre de usuario y el pin para realizar el inicio de sesion")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Inicio de sesion exitoso"),
-        @ApiResponse(responseCode = "400", description = "Datos incorrectos o invalidos")
-    })
     public ResponseEntity<Usuario> login(@RequestBody Usuario usuario) {
         Usuario user = service.login(usuario.getUsuario(), usuario.getPin());
         return user == null ? ResponseEntity.status(HttpStatus.UNAUTHORIZED).build() : ResponseEntity.ok(user);
@@ -58,32 +53,24 @@ public class UsuarioController {
 
     @Transactional
     @GetMapping
-    @Operation(summary = "Obtener todos los usuarios", description = "Obtiene una lista con todos los usuarios")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Lista obtenida con exito"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
-    })
     public List<Usuario> getAllUsuarios() {
         return service.getAllUsuarios();
     }
 
     @Transactional
     @GetMapping("/{user}")
-    @Operation(summary = "Obtener por usuario", description = "Obtiene un usuario en base a su nombre de usuario")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Usuario obtenido con exito"),
-        @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
-    })
     public ResponseEntity<Usuario> getUsuarioPorUser(@PathVariable String user) {
         Usuario u = service.findByUser(user);
         return u != null ? ResponseEntity.ok(u) : ResponseEntity.notFound().build();
     }
 
-    @Operation(summary = "Obtener por usuario", description = "Obtiene un usuario en base a su nombre de usuario")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Usuario obtenido con exito"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
-    })
+//    @Transactional
+//    @PutMapping("/{user}")
+//    public ResponseEntity<Usuario> updateUsuario(@PathVariable String user, @RequestBody Usuario usuario) {
+//        Usuario actualizado = service.updateUsuario(user, usuario);
+//        return actualizado != null ? ResponseEntity.ok(actualizado) : ResponseEntity.notFound().build();
+//    }
+    
     @Transactional
     @GetMapping("/consultarTipo/{user}")
     public ResponseEntity<String> consultarTipo(@PathVariable String user) {
