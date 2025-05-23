@@ -226,4 +226,43 @@ public class ClienteRepository {
         return asientosBoolean;
     }
 
+    public Cliente getClienteByUsername(String user) {
+        Query queryUsuario = entityManager.createNativeQuery("SELECT * FROM usuarios_data WHERE usuario = :usuario", UsuarioData.class);
+        queryUsuario.setParameter("usuario", user);
+        UsuarioData usuarioData = null;
+        try {
+            usuarioData = (UsuarioData) queryUsuario.getSingleResult();
+        } catch (Exception e) {
+            return null;
+        }
+        
+        Query queryCliente = entityManager.createNativeQuery("SELECT * FROM clientes_data WHERE id_usuario = :idUsuario", ClienteData.class);
+        queryCliente.setParameter("id_usuario", usuarioData.getId());
+        ClienteData clienteData = null;
+        try {
+            clienteData = ()
+        } catch (Exception e) {
+        }
+        
+        List<Cliente> clientes = new ArrayList<>();
+
+        Query queryClientes = entityManager.createNativeQuery("SELECT * FROM clientes_data", ClienteData.class);
+        List<ClienteData> dataClientes = queryClientes.getResultList();
+
+        for (ClienteData data : dataClientes) {
+            UsuarioData u = findUserDataById(data.getIdUsuario());
+            if (u == null) {
+                logger.warn("No se pudo encontrar el usuario correspondiente al cliente: {}", data.getId());
+                continue;
+            }
+            Cliente c = new Cliente(u.getUsuario(), u.getPin());
+
+            c.setTiquetes(JSONATiquetes(data.getTiquetes(), data.getIdUsuario()));
+
+            clientes.add(c);
+        }
+
+        return clientes;
+    }
+
 }

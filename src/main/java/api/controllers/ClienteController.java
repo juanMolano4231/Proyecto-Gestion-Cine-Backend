@@ -6,6 +6,7 @@ package api.controllers;
 
 import api.models.Cliente;
 import api.services.ClienteService;
+import api.services.JWTService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.transaction.Transactional;
@@ -25,9 +26,11 @@ import org.springframework.web.bind.annotation.*;
 public class ClienteController {
 
     private final ClienteService service;
+    private final JWTService jwtService;
 
     @Autowired
-    public ClienteController(ClienteService service) {
+    public ClienteController(ClienteService service, JWTService jwtService) {
+        this.jwtService = jwtService;
         this.service = service;
 
     }
@@ -57,5 +60,26 @@ public class ClienteController {
         Cliente c =  service.saveCliente(cliente);
         return c == null ? ResponseEntity.badRequest().build() : ResponseEntity.ok(cliente);
     }
+    
+    @Transactional
+    @GetMapping("/{user}")
+    public ResponseEntity<Cliente> getClienteByUsername(
+            @PathVariable String user,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        
+        String token = this.jwtService.extractToken(authHeader);
+        if (token == null || !this.jwtService.validarToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        if (   !( this.jwtService.obtenerUsuario(token).equals(user) || this.jwtService.obtenerTipo(token).equals("admin") )   ) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
+        Cliente cliente = service.getClienteByUsername(user);
+        if (actualizado == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(actualizado);
+    }
+    
 }

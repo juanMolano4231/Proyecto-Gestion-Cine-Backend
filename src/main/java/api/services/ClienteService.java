@@ -38,4 +38,8 @@ public class ClienteService {
         return (Cliente) usuarioService.saveUsuario(cliente);
     }
 
+    public Cliente getClienteByUsername(String user) {
+        return clienteRepository.getClienteByUsername(user);
+    }
+
 }
