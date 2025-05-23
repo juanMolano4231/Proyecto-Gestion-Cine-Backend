@@ -6,7 +6,10 @@ package api.controllers;
 
 import api.models.Cliente;
 import api.services.ClienteService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.transaction.Transactional;
 import java.util.List;
@@ -34,12 +37,22 @@ public class ClienteController {
 
     @Transactional
     @GetMapping
+    @Operation(summary = "Obtener todos los clientes", description = "Retorna una lista de todos los clientes registrados")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Lista de clientes obtenida exitosamente"),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
     public List<Cliente> getAllClientes() {
         return service.getAllClientes();
     }
 
     @Transactional
     @PostMapping("/{user}")
+    @Operation(summary = "Actualizar cliente", description = "Actualiza un cliente existente por nombre de usuario")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Cliente actualizado exitosamente"),
+        @ApiResponse(responseCode = "404", description = "Cliente no encontrado")
+    })
     public ResponseEntity<Cliente> postCliente(
             @PathVariable String user,
             @RequestBody Cliente cliente) {
@@ -50,11 +63,16 @@ public class ClienteController {
         }
         return ResponseEntity.ok(actualizado);
     }
-    
+
     @Transactional
     @PostMapping
+    @Operation(summary = "Crear nuevo cliente", description = "Crea un nuevo cliente con los datos proporcionados")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Cliente creado exitosamente"),
+        @ApiResponse(responseCode = "400", description = "Solicitud inválida con datos erróneos")
+    })
     public ResponseEntity<Cliente> createCliente(@RequestBody @Parameter(description = "Datos del cliente a crear") Cliente cliente) {
-        Cliente c =  service.saveCliente(cliente);
+        Cliente c = service.saveCliente(cliente);
         return c == null ? ResponseEntity.badRequest().build() : ResponseEntity.ok(cliente);
     }
 
