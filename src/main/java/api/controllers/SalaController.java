@@ -7,12 +7,16 @@ package api.controllers;
 import api.models.Funcion;
 import api.services.SalaService;
 import api.models.Sala;
+import api.repositories.SalaRepository;
+import api.services.JWTService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +27,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -37,9 +42,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class SalaController {
 
     private final SalaService service;
+    private final JWTService jwtService;
+    private static final Logger logger = LoggerFactory.getLogger(SalaRepository.class);
 
     @Autowired
-    public SalaController(SalaService service) {
+    public SalaController(SalaService service, JWTService jwtService) {
+        this.jwtService = jwtService;
         this.service = service;
     }
 
@@ -49,7 +57,11 @@ public class SalaController {
         @ApiResponse(responseCode = "200", description = "Lista de salas obtenida con éxito"),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    public ResponseEntity<List<Sala>> getSalas() {
+    public ResponseEntity<List<Sala>> getSalas(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        String token = this.jwtService.extractToken(authHeader);
+        if (token == null || !this.jwtService.validarToken(token) || !this.jwtService.obtenerTipo(token).equals("admin")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         List<Sala> salas = service.getSalas();
         return new ResponseEntity<>(salas, HttpStatus.OK);
     }
@@ -60,7 +72,12 @@ public class SalaController {
         @ApiResponse(responseCode = "201", description = "Sala creado con éxito"),
         @ApiResponse(responseCode = "400", description = "Datos inválidos")
     })
-    public ResponseEntity<Sala> createSala(@RequestBody @Parameter(description = "Datos de la sala a crear") Sala sala) {
+    public ResponseEntity<Sala> createSala(@RequestBody @Parameter(description = "Datos de la sala a crear") Sala sala,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        String token = this.jwtService.extractToken(authHeader);
+        if (token == null || !this.jwtService.validarToken(token) || !this.jwtService.obtenerTipo(token).equals("admin")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         Sala nuevaSala = service.saveSala(sala);
         return new ResponseEntity<>(nuevaSala, HttpStatus.CREATED);
     }
@@ -71,7 +88,12 @@ public class SalaController {
         @ApiResponse(responseCode = "204", description = "Sala eliminada con éxito"),
         @ApiResponse(responseCode = "404", description = "Sala no encontrado")
     })
-    public ResponseEntity<Void> deleteSala(@PathVariable @Parameter(description = "ID de la sala") int id) {
+    public ResponseEntity<Void> deleteSala(@PathVariable @Parameter(description = "ID de la sala") int id,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        String token = this.jwtService.extractToken(authHeader);
+        if (token == null || !this.jwtService.validarToken(token) || !this.jwtService.obtenerTipo(token).equals("admin")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         Sala salaExistente = service.findSala(id);
         if (salaExistente != null) {
             service.deleteSala(salaExistente);
@@ -88,7 +110,12 @@ public class SalaController {
         @ApiResponse(responseCode = "400", description = "Datos inválidos")
     })
     public ResponseEntity<Void> createFuncion(@PathVariable @Parameter(description = "ID de la sala") int id,
-            @RequestBody @Parameter(description = "Datos de la función a crear") String[] datos) {
+            @RequestBody @Parameter(description = "Datos de la función a crear") String[] datos,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        String token = this.jwtService.extractToken(authHeader);
+        if (token == null || !this.jwtService.validarToken(token) || !this.jwtService.obtenerTipo(token).equals("admin")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         Funcion nuevaFuncion = service.saveFuncion(id, datos);
         if (nuevaFuncion == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -104,7 +131,12 @@ public class SalaController {
         @ApiResponse(responseCode = "400", description = "Datos inválidos")
     })
     public ResponseEntity<Sala> patchSala(@PathVariable @Parameter(description = "ID de la sala") int id,
-            @RequestBody @Parameter(description = "Datos de la sala a actualizar") Sala sala) {
+            @RequestBody @Parameter(description = "Datos de la sala a actualizar") Sala sala,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        String token = this.jwtService.extractToken(authHeader);
+        if (token == null || !this.jwtService.validarToken(token) || !this.jwtService.obtenerTipo(token).equals("admin")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         Sala nuevaSala = service.patchSala(id, sala);
         if (nuevaSala == null) {
             return new ResponseEntity<>(nuevaSala, HttpStatus.BAD_REQUEST);

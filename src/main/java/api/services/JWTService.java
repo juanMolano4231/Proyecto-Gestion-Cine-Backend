@@ -37,13 +37,8 @@ public class JWTService {
         if (secretCode == null || secretCode.trim().isEmpty()) {
             throw new IllegalStateException("JWT_SECRET must be configured in application.properties");
         }
-        
-        logger.info("jwtSecret: {}", jwtSecret);
 
         this.jwtSecret = Keys.hmacShaKeyFor(secretCode.getBytes(StandardCharsets.UTF_8));
-        
-        logger.info("jwtSecret: {}", jwtSecret);
-
     }
 
     public String generarToken(Usuario usuario, String tipo) {
@@ -88,7 +83,7 @@ public class JWTService {
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
-            return claims.get("tipo", String.class);
+            return claims.get("tipo", String.class).replace("\"", "").trim();
         } catch (JwtException e) {
             return null;
         }
