@@ -8,7 +8,10 @@ import api.models.Cliente;
 import api.repositories.SalaRepository;
 import api.services.ClienteService;
 import api.services.JWTService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.transaction.Transactional;
 import java.util.List;
@@ -41,11 +44,17 @@ public class ClienteController {
 
     @Transactional
     @PostMapping("/{user}")
+    @Operation(summary = "Actualizar cliente existente")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Cliente actualizado con éxito"),
+        @ApiResponse(responseCode = "401", description = "Token inválido o usuario no autorizado"),
+        @ApiResponse(responseCode = "404", description = "Cliente no encontrado")
+    })
     public ResponseEntity<Cliente> postCliente(
             @PathVariable String user,
             @RequestBody Cliente cliente,
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
-        
+
         String token = this.jwtService.extractToken(authHeader);
         if (token == null || !this.jwtService.validarToken(token) || !this.jwtService.obtenerUsuario(token).equals(user)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -57,25 +66,36 @@ public class ClienteController {
         }
         return ResponseEntity.ok(actualizado);
     }
-    
+
     @Transactional
     @PostMapping
+    @Operation(summary = "Crear nuevo cliente")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Cliente creado con éxito"),
+        @ApiResponse(responseCode = "400", description = "Datos del cliente inválidos")
+    })
     public ResponseEntity<Cliente> createCliente(@RequestBody @Parameter(description = "Datos del cliente a crear") Cliente cliente) {
-        Cliente c =  service.saveCliente(cliente);
+        Cliente c = service.saveCliente(cliente);
         return c == null ? ResponseEntity.badRequest().build() : ResponseEntity.ok(cliente);
     }
-    
+
     @Transactional
     @GetMapping("/{user}")
+    @Operation(summary = "Obtener cliente por nombre de usuario")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Cliente encontrado"),
+        @ApiResponse(responseCode = "401", description = "Token inválido o sin autorización"),
+        @ApiResponse(responseCode = "404", description = "Cliente no encontrado")
+    })
     public ResponseEntity<Cliente> getClienteByUsername(
             @PathVariable String user,
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
-        
+
         String token = this.jwtService.extractToken(authHeader);
         if (token == null || !this.jwtService.validarToken(token)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        if (   !( this.jwtService.obtenerUsuario(token).equals(user) || this.jwtService.obtenerTipo(token).equals("admin") )   ) {
+        if (!(this.jwtService.obtenerUsuario(token).equals(user) || this.jwtService.obtenerTipo(token).equals("admin"))) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
@@ -85,5 +105,5 @@ public class ClienteController {
         }
         return ResponseEntity.ok(cliente);
     }
-    
+
 }

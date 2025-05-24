@@ -53,10 +53,15 @@ public class UsuarioController {
 
     @Transactional
     @PostMapping("/login")
+    @Operation(summary = "Iniciar sesión", description = "Valida las credenciales del usuario y devuelve un token JWT si son correctas.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Inicio de sesión exitoso"),
+        @ApiResponse(responseCode = "401", description = "Credenciales inválidas")
+    })
     public ResponseEntity<LoginResponse> login(@RequestBody Usuario usuario) {
         Usuario user = service.login(usuario.getUsuario(), usuario.getPin());
         String tipo = service.consultarTipo(user.getUsuario());
-        
+
         if (user == null || tipo == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -72,21 +77,32 @@ public class UsuarioController {
 
     @Transactional
     @GetMapping("/consultarTipo/{user}")
+    @Operation(summary = "Consultar tipo de usuario", description = "Devuelve el tipo de rol asignado al usuario (admin, empleado, etc).")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Tipo de usuario encontrado"),
+        @ApiResponse(responseCode = "401", description = "Token JWT inválido o ausente"),
+        @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
+    })
     public ResponseEntity<String> consultarTipo(
             @PathVariable String user, @RequestHeader(value = "Authorization", required = false) String authHeader) {
         String token = this.jwtService.extractToken(authHeader);
         if (token == null || !this.jwtService.validarToken(token)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or missing JWT token");
         }
-        
+
         String tipo = service.consultarTipo(user);
         return tipo != null ? ResponseEntity.ok(tipo) : ResponseEntity.notFound().build();
     }
 
     @GetMapping("/checkUsername/{user}")
+    @Operation(summary = "Verificar disponibilidad de nombre de usuario", description = "Indica si un nombre de usuario ya está en uso.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Consulta realizada exitosamente"),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
     public ResponseEntity<Boolean> checkUsername(@PathVariable String user) {
         Boolean disponible = service.checkUsername(user);
         return disponible != null ? ResponseEntity.ok(disponible) : ResponseEntity.internalServerError().build();
     }
-    
+
 }
