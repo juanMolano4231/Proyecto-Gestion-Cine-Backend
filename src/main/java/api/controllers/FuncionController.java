@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import api.services.JWTService;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.http.HttpStatusCode;
 
 /**
@@ -50,8 +51,12 @@ public class FuncionController {
         @ApiResponse(responseCode = "400", description = "Función proporcionada malformada"),
         @ApiResponse(responseCode = "401", description = "Token inválido o ausente")
     })
-    public ResponseEntity<Void> updateFuncion(@PathVariable int idFuncion,
+    public ResponseEntity<Void> updateFuncion(
+            @Parameter(description = "ID de la función que se desea actualizar", required = true)
+            @PathVariable int idFuncion,
+            @Parameter(description = "Objeto Funcion con los nuevos datos", required = true)
             @RequestBody Funcion funcion,
+            @Parameter(description = "Token JWT de autenticación", required = true)
             @RequestHeader("Authorization") String token) {
         String extractedToken = jwtService.extractToken(token);
         if (extractedToken == null || !jwtService.validarToken(extractedToken)) {

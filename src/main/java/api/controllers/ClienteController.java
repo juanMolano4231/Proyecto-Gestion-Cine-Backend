@@ -51,9 +51,10 @@ public class ClienteController {
         @ApiResponse(responseCode = "404", description = "Cliente no encontrado")
     })
     public ResponseEntity<Cliente> postCliente(
-            @PathVariable String user,
-            @RequestBody Cliente cliente,
-            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+            @PathVariable @Parameter(description = "Nombre de usuario del cliente") String user,
+            @RequestBody @Parameter(description = "Datos del cliente a actualizar") Cliente cliente,
+            @RequestHeader(value = "Authorization", required = false)
+            @Parameter(description = "Token JWT en el encabezado Authorization (formato: Bearer <token>)") String authHeader) {
 
         String token = this.jwtService.extractToken(authHeader);
         if (token == null || !this.jwtService.validarToken(token) || !this.jwtService.obtenerUsuario(token).equals(user)) {
@@ -74,7 +75,9 @@ public class ClienteController {
         @ApiResponse(responseCode = "200", description = "Cliente creado con éxito"),
         @ApiResponse(responseCode = "400", description = "Datos del cliente inválidos")
     })
-    public ResponseEntity<Cliente> createCliente(@RequestBody @Parameter(description = "Datos del cliente a crear") Cliente cliente) {
+    public ResponseEntity<Cliente> createCliente(
+            @RequestBody @Parameter(description = "Datos del cliente a crear") Cliente cliente) {
+
         Cliente c = service.saveCliente(cliente);
         return c == null ? ResponseEntity.badRequest().build() : ResponseEntity.ok(cliente);
     }
@@ -88,8 +91,9 @@ public class ClienteController {
         @ApiResponse(responseCode = "404", description = "Cliente no encontrado")
     })
     public ResponseEntity<Cliente> getClienteByUsername(
-            @PathVariable String user,
-            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+            @PathVariable @Parameter(description = "Nombre de usuario del cliente") String user,
+            @RequestHeader(value = "Authorization", required = false)
+            @Parameter(description = "Token JWT en el encabezado Authorization (formato: Bearer <token>)") String authHeader) {
 
         String token = this.jwtService.extractToken(authHeader);
         if (token == null || !this.jwtService.validarToken(token)) {

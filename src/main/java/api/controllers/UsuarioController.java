@@ -58,7 +58,7 @@ public class UsuarioController {
         @ApiResponse(responseCode = "200", description = "Inicio de sesión exitoso"),
         @ApiResponse(responseCode = "401", description = "Credenciales inválidas")
     })
-    public ResponseEntity<LoginResponse> login(@RequestBody Usuario usuario) {
+    public ResponseEntity<LoginResponse> login(@RequestBody @Parameter(description = "Credenciales del usuario (usuario y pin)") Usuario usuario) {
         Usuario user = service.login(usuario.getUsuario(), usuario.getPin());
         String tipo = service.consultarTipo(user.getUsuario());
 
@@ -84,7 +84,9 @@ public class UsuarioController {
         @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     })
     public ResponseEntity<String> consultarTipo(
-            @PathVariable String user, @RequestHeader(value = "Authorization", required = false) String authHeader) {
+            @PathVariable @Parameter(description = "Nombre de usuario") String user,
+            @RequestHeader(value = "Authorization", required = false)
+            @Parameter(description = "Token JWT en el encabezado Authorization (formato: Bearer <token>)") String authHeader) {
         String token = this.jwtService.extractToken(authHeader);
         if (token == null || !this.jwtService.validarToken(token)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or missing JWT token");
@@ -100,7 +102,8 @@ public class UsuarioController {
         @ApiResponse(responseCode = "200", description = "Consulta realizada exitosamente"),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    public ResponseEntity<Boolean> checkUsername(@PathVariable String user) {
+    public ResponseEntity<Boolean> checkUsername(
+            @PathVariable @Parameter(description = "Nombre de usuario a verificar") String user) {
         Boolean disponible = service.checkUsername(user);
         return disponible != null ? ResponseEntity.ok(disponible) : ResponseEntity.internalServerError().build();
     }
