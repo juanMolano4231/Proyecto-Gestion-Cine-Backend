@@ -59,7 +59,7 @@ public class SalaController {
     })
     public ResponseEntity<List<Sala>> getSalas(@RequestHeader(value = "Authorization", required = false) String authHeader) {
         String token = this.jwtService.extractToken(authHeader);
-        if (token == null || !this.jwtService.validarToken(token) || !this.jwtService.obtenerTipo(token).equals("admin")) {
+        if (token == null || !this.jwtService.validarToken(token)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         List<Sala> salas = service.getSalas();

@@ -5,12 +5,15 @@
 package api.controllers;
 
 import api.models.Cliente;
+import api.repositories.SalaRepository;
 import api.services.ClienteService;
 import api.services.JWTService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.transaction.Transactional;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +30,7 @@ public class ClienteController {
 
     private final ClienteService service;
     private final JWTService jwtService;
+    private static final Logger logger = LoggerFactory.getLogger(SalaRepository.class);
 
     @Autowired
     public ClienteController(ClienteService service, JWTService jwtService) {
@@ -36,16 +40,16 @@ public class ClienteController {
     }
 
     @Transactional
-    @GetMapping
-    public List<Cliente> getAllClientes() {
-        return service.getAllClientes();
-    }
-
-    @Transactional
     @PostMapping("/{user}")
     public ResponseEntity<Cliente> postCliente(
             @PathVariable String user,
-            @RequestBody Cliente cliente) {
+            @RequestBody Cliente cliente,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        
+        String token = this.jwtService.extractToken(authHeader);
+        if (token == null || !this.jwtService.validarToken(token) || !this.jwtService.obtenerUsuario(token).equals(user)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
         Cliente actualizado = service.updateCliente(user, cliente);
         if (actualizado == null) {
@@ -75,11 +79,11 @@ public class ClienteController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        Cliente actualizado = service.getClienteByUsername(user);
-        if (actualizado == null) {
+        Cliente cliente = service.getClienteByUsername(user);
+        if (cliente == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        return ResponseEntity.ok(actualizado);
+        return ResponseEntity.ok(cliente);
     }
     
 }
