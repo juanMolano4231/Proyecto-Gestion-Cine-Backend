@@ -6,6 +6,7 @@
 package api.controllers;
 
 import api.models.data.TiqueteData;
+import api.services.JWTService;
 import api.services.TiqueteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -17,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,10 +33,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class TiqueteController {
     
     private final TiqueteService service;
+    private final JWTService jwtService;
 
     @Autowired
-    public TiqueteController(TiqueteService service) {
+    public TiqueteController(TiqueteService service, JWTService jwtService) {
         this.service = service;
+        this.jwtService = jwtService;
     }
 
     @DeleteMapping("/{idFuncion}/{asiento}")
@@ -44,7 +48,14 @@ public class TiqueteController {
         @ApiResponse(responseCode = "500", description = "Error interno del servidor"),
         @ApiResponse(responseCode = "404", description = "Tiquete no encontrado")
     })
-    public ResponseEntity<Void> borrarTiquete(@PathVariable int idFuncion, @PathVariable int asiento) {
+    public ResponseEntity<Void> borrarTiquete(@PathVariable int idFuncion, @PathVariable int asiento, 
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        
+        String token = this.jwtService.extractToken(authHeader);
+        if (token == null || !this.jwtService.validarToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        
         boolean tiqueteBorrado = service.deleteTiquete(idFuncion, asiento);
         return tiqueteBorrado ? ResponseEntity.status(HttpStatus.NO_CONTENT).build() : ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
