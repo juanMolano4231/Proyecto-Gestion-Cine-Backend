@@ -26,16 +26,16 @@ public class ClienteService {
         this.clienteRepository = clienteRepository;
     }
 
-    public List<Cliente> getAllClientes() {
-        return clienteRepository.getAllClientes();
-    }
-
     public Cliente updateCliente(String user, Cliente cliente) {
         return clienteRepository.updateCliente(user, cliente);
     }
 
     public Cliente saveCliente(Cliente cliente) {
         return (Cliente) usuarioService.saveUsuario(cliente);
+    }
+
+    public Cliente getClienteByUsername(String user) {
+        return clienteRepository.getClienteByUsername(user);
     }
 
 }

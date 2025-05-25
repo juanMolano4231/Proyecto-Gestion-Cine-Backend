@@ -2,7 +2,6 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-
 package api.controllers;
 
 import api.models.Funcion;
@@ -19,24 +18,29 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import api.services.JWTService;
+import io.swagger.v3.oas.annotations.Parameter;
+import org.springframework.http.HttpStatusCode;
 
 /**
  *
  * @author Juan José Molano Franco
  */
-
 @RestController
 @RequestMapping("/api/funciones")
 @Tag(name = "Funciones", description = "API para la gestión de funciones")
 public class FuncionController {
-    
+
     private final FuncionService service;
+    private final JWTService jwtService;
 
     @Autowired
-    public FuncionController(FuncionService service) {
+    public FuncionController(FuncionService service, JWTService jwtService) {
         this.service = service;
+        this.jwtService = jwtService;
     }
 
     @PutMapping("/{idFuncion}")
@@ -44,11 +48,23 @@ public class FuncionController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "204", description = "Función actualizada exitosamente"),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor"),
-        @ApiResponse(responseCode = "400", description = "Funcion proporcionada malformada")
+        @ApiResponse(responseCode = "400", description = "Función proporcionada malformada"),
+        @ApiResponse(responseCode = "401", description = "Token inválido o ausente")
     })
-    public ResponseEntity<Void> updateFuncion(@PathVariable int idFuncion, @RequestBody Funcion funcion) {
+    public ResponseEntity<Void> updateFuncion(
+            @Parameter(description = "ID de la función que se desea actualizar", required = true)
+            @PathVariable int idFuncion,
+            @Parameter(description = "Objeto Funcion con los nuevos datos", required = true)
+            @RequestBody Funcion funcion,
+            @Parameter(description = "Token JWT de autenticación", required = true)
+            @RequestHeader("Authorization") String token) {
+        String extractedToken = jwtService.extractToken(token);
+        if (extractedToken == null || !jwtService.validarToken(extractedToken)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         Funcion updatedFuncion = service.updateFuncion(idFuncion, funcion);
         return updatedFuncion == null ? ResponseEntity.status(HttpStatus.BAD_REQUEST).build() : ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
-    
+
 }

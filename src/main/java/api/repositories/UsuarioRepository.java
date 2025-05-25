@@ -174,9 +174,15 @@ public class UsuarioRepository {
         try {
             data = (UsuarioData) query.getSingleResult();
         } catch (Exception e) {
+//            logger.warn("No se puede encontrar el tipo del usuario: {}", user);
             return null;
         }
         return '"' + data.getTipo() + '"';
+    }
+
+    public Boolean checkUsername(String user) {
+        return getAllUsuarios().stream()
+                .anyMatch(u -> u.getUsuario().equals(user));
     }
 
 }

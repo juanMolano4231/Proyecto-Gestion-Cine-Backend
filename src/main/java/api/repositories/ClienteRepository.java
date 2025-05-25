@@ -36,28 +36,6 @@ public class ClienteRepository {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ClienteRepository.class);
 
-    public List<Cliente> getAllClientes() {
-        List<Cliente> clientes = new ArrayList<>();
-
-        Query queryClientes = entityManager.createNativeQuery("SELECT * FROM clientes_data", ClienteData.class);
-        List<ClienteData> dataClientes = queryClientes.getResultList();
-
-        for (ClienteData data : dataClientes) {
-            UsuarioData u = findUserDataById(data.getIdUsuario());
-            if (u == null) {
-                logger.warn("No se pudo encontrar el usuario correspondiente al cliente: {}", data.getId());
-                continue;
-            }
-            Cliente c = new Cliente(u.getUsuario(), u.getPin());
-
-            c.setTiquetes(JSONATiquetes(data.getTiquetes(), data.getIdUsuario()));
-
-            clientes.add(c);
-        }
-
-        return clientes;
-    }
-
     public UsuarioData findUserDataById(int id) {
         Query query = entityManager.createNativeQuery("SELECT * FROM usuarios_data WHERE id = :id", UsuarioData.class);
         query.setParameter("id", id);
@@ -168,7 +146,7 @@ public class ClienteRepository {
         entityManager.flush();
     }
 
-    private List<Tiquete> JSONATiquetes(String json, int idCliente) {
+    private List<Tiquete> JSONATiquetes(String json, int idUsuario) {
         List<Tiquete> tiquetes = new ArrayList<>();
         int[] idsTiquetes = null;
         try {
@@ -176,7 +154,7 @@ public class ClienteRepository {
             idsTiquetes = mapper.readValue(json, new TypeReference<int[]>() {
             });
         } catch (Exception e) {
-            logger.warn("La lista de tiquetes del cliente con id_usuario: {} no se pudo parsear", idCliente);
+            logger.warn("La lista de tiquetes del cliente con id_usuario: {} no se pudo parsear", idUsuario);
             return null;
         }
         for (int i = 0; i < idsTiquetes.length; i++) {
@@ -187,7 +165,7 @@ public class ClienteRepository {
             try {
                 dataTiquete = (TiqueteData) queryTiquete.getSingleResult();
             } catch (Exception e) {
-                logger.warn("No se encontró el tiqueteData de id: {}, del cliente de id: {}, con JSON: {}", idTiquete, idCliente, json);
+                logger.warn("No se encontró el tiqueteData de id: {}, del cliente de id_usuar'o: {}, con JSON: {}", idTiquete, idUsuario, json);
                 continue;
             }
 
@@ -198,7 +176,7 @@ public class ClienteRepository {
             try {
                 dataFuncion = (FuncionData) queryFuncion.getSingleResult();
             } catch (Exception e) {
-                logger.warn("No se encontró la funcionData de id: {}, del cliente de id: {}, del tiquete de id: {}", idFuncion, idCliente, idTiquete);
+                logger.warn("No se encontró la funcionData de id: {}, del cliente de id_usuario: {}, del tiquete de id: {}", idFuncion, idUsuario, idTiquete);
                 continue;
             }
 
@@ -224,6 +202,32 @@ public class ClienteRepository {
             logger.warn("No se pudo parsear los asientos de JSON: {}", asientos);
         }
         return asientosBoolean;
+    }
+
+    public Cliente getClienteByUsername(String user) {
+        Query queryUsuario = entityManager.createNativeQuery("SELECT * FROM usuarios_data WHERE usuario = :usuario", UsuarioData.class);
+        queryUsuario.setParameter("usuario", user);
+        UsuarioData usuarioData = null;
+        try {
+            usuarioData = (UsuarioData) queryUsuario.getSingleResult();
+        } catch (Exception e) {
+            return null;
+        }
+        
+        Query queryCliente = entityManager.createNativeQuery("SELECT * FROM clientes_data WHERE id_usuario = :idUsuario", ClienteData.class);
+        queryCliente.setParameter("idUsuario", usuarioData.getId());
+        ClienteData clienteData = null;
+        try {
+            clienteData = (ClienteData) queryCliente.getSingleResult();
+        } catch (Exception e) {
+            return null;
+        }
+        
+        Cliente cliente = new Cliente(usuarioData.getUsuario(), usuarioData.getPin());
+
+        cliente.setTiquetes(JSONATiquetes(clienteData.getTiquetes(), clienteData.getIdUsuario()));
+
+        return cliente;
     }
 
 }
