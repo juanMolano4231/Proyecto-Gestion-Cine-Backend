@@ -57,7 +57,8 @@ public class SalaController {
         @ApiResponse(responseCode = "200", description = "Lista de salas obtenida con éxito"),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    public ResponseEntity<List<Sala>> getSalas(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+    public ResponseEntity<List<Sala>> getSalas(@RequestHeader(value = "Authorization", required = false) 
+            @Parameter(description = "Token JWT en el encabezado Authorization (formato: Bearer <token>)") String authHeader) {
         String token = this.jwtService.extractToken(authHeader);
         if (token == null || !this.jwtService.validarToken(token)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -73,7 +74,8 @@ public class SalaController {
         @ApiResponse(responseCode = "400", description = "Datos inválidos")
     })
     public ResponseEntity<Sala> createSala(@RequestBody @Parameter(description = "Datos de la sala a crear") Sala sala,
-            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+            @RequestHeader(value = "Authorization", required = false)
+                    @Parameter(description = "Token JWT en el encabezado Authorization (formato: Bearer <token>)") String authHeader) {
         String token = this.jwtService.extractToken(authHeader);
         if (token == null || !this.jwtService.validarToken(token) || !this.jwtService.obtenerTipo(token).equals("admin")) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -89,7 +91,8 @@ public class SalaController {
         @ApiResponse(responseCode = "404", description = "Sala no encontrado")
     })
     public ResponseEntity<Void> deleteSala(@PathVariable @Parameter(description = "ID de la sala") int id,
-            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+            @RequestHeader(value = "Authorization", required = false) 
+                    @Parameter(description = "Token JWT en el encabezado Authorization (formato: Bearer <token>)") String authHeader) {
         String token = this.jwtService.extractToken(authHeader);
         if (token == null || !this.jwtService.validarToken(token) || !this.jwtService.obtenerTipo(token).equals("admin")) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -111,7 +114,8 @@ public class SalaController {
     })
     public ResponseEntity<Void> createFuncion(@PathVariable @Parameter(description = "ID de la sala") int id,
             @RequestBody @Parameter(description = "Datos de la función a crear") String[] datos,
-            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+            @RequestHeader(value = "Authorization", required = false)
+                    @Parameter(description = "Token JWT en el encabezado Authorization (formato: Bearer <token>)") String authHeader) {
         String token = this.jwtService.extractToken(authHeader);
         if (token == null || !this.jwtService.validarToken(token) || !this.jwtService.obtenerTipo(token).equals("admin")) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -132,7 +136,8 @@ public class SalaController {
     })
     public ResponseEntity<Sala> patchSala(@PathVariable @Parameter(description = "ID de la sala") int id,
             @RequestBody @Parameter(description = "Datos de la sala a actualizar") Sala sala,
-            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+            @RequestHeader(value = "Authorization", required = false) 
+                    @Parameter(description = "Token JWT en el encabezado Authorization (formato: Bearer <token>)") String authHeader) {
         String token = this.jwtService.extractToken(authHeader);
         if (token == null || !this.jwtService.validarToken(token) || !this.jwtService.obtenerTipo(token).equals("admin")) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
