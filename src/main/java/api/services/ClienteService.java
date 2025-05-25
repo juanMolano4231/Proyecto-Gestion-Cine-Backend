@@ -37,5 +37,4 @@ public class ClienteService {
     public Cliente getClienteByUsername(String user) {
         return clienteRepository.getClienteByUsername(user);
     }
-
 }
