@@ -60,11 +60,12 @@ public class UsuarioController {
     })
     public ResponseEntity<LoginResponse> login(@RequestBody @Parameter(description = "Credenciales del usuario (usuario y pin)") Usuario usuario) {
         Usuario user = service.login(usuario.getUsuario(), usuario.getPin());
-        String tipo = service.consultarTipo(user.getUsuario());
 
-        if (user == null || tipo == null) {
+        if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+        
+        String tipo = service.consultarTipo(user.getUsuario());
 
         String jwt = jwtService.generarToken(user, tipo);
 
