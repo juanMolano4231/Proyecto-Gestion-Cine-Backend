@@ -5,14 +5,18 @@
 package api.controllers;
 
 import api.models.Cliente;
-import api.models.Usuario;
+import api.repositories.SalaRepository;
 import api.services.ClienteService;
+import api.services.JWTService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.transaction.Transactional;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,48 +32,82 @@ import org.springframework.web.bind.annotation.*;
 public class ClienteController {
 
     private final ClienteService service;
+    private final JWTService jwtService;
+    private static final Logger logger = LoggerFactory.getLogger(SalaRepository.class);
 
     @Autowired
-    public ClienteController(ClienteService service) {
+    public ClienteController(ClienteService service, JWTService jwtService) {
+        this.jwtService = jwtService;
         this.service = service;
+
     }
 
-    @GetMapping
-    @Operation(summary = "Obtener todos los clientes", description = "Devuelve una lista de todos los clientes registrados.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Lista de clientes obtenida con éxito"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
-    })
-    public ResponseEntity<List<Cliente>> getAllClientes() {
-        List<Cliente> clientes = service.getAllClientes();
-        return new ResponseEntity<>(clientes, HttpStatus.OK);
-    }
-    
+    @Transactional
     @PostMapping("/{user}")
-    @Operation(summary = "Actualizar cliente", description = "Actualiza un cliente según los datos proporcionados.")
+    @Operation(summary = "Actualizar cliente existente")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = " Cliente actualizado con éxito"),
-        @ApiResponse(responseCode = "400", description = "Datos inválidos")
+        @ApiResponse(responseCode = "200", description = "Cliente actualizado con éxito"),
+        @ApiResponse(responseCode = "401", description = "Token inválido o usuario no autorizado"),
+        @ApiResponse(responseCode = "404", description = "Cliente no encontrado")
     })
-    public ResponseEntity<Cliente> postCliente(@PathVariable @Parameter(description = "Username del cliente") String user,
-            @RequestBody @Parameter(description = "Datos del cliente a actualizar") Cliente cliente) {
-        Cliente nuevoCliente = service.postCliente(user, cliente);
-        if (nuevoCliente == null) {
-            return new ResponseEntity<>(nuevoCliente, HttpStatus.BAD_REQUEST);
-        } else {
-            return new ResponseEntity<>(nuevoCliente, HttpStatus.CREATED);
+    public ResponseEntity<Cliente> postCliente(
+            @PathVariable @Parameter(description = "Nombre de usuario del cliente") String user,
+            @RequestBody @Parameter(description = "Datos del cliente a actualizar") Cliente cliente,
+            @RequestHeader(value = "Authorization", required = false)
+            @Parameter(description = "Token JWT en el encabezado Authorization (formato: Bearer <token>)") String authHeader) {
+
+        String token = this.jwtService.extractToken(authHeader);
+        if (token == null || !this.jwtService.validarToken(token) || !this.jwtService.obtenerUsuario(token).equals(user)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-    }
-    
-    @PostMapping
-    @Operation(summary = "Crear un nuevo cliente", description = "Crea un nuevo cliente con los datos proporcionados.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Cliente creado con éxito"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos")
-    })
-    public ResponseEntity<Cliente> createCliente(@RequestBody @Parameter(description = "Datos del cliente a crear") Cliente cliente) {
-        Cliente newUsuario = service.saveCliente(cliente);
-        return new ResponseEntity<>(newUsuario, HttpStatus.CREATED);
+
+        Cliente actualizado = service.updateCliente(user, cliente);
+        if (actualizado == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(actualizado);
     }
 
+    @Transactional
+    @PostMapping
+    @Operation(summary = "Crear nuevo cliente")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Cliente creado con éxito"),
+        @ApiResponse(responseCode = "400", description = "Datos del cliente inválidos")
+    })
+    public ResponseEntity<Cliente> createCliente(
+            @RequestBody @Parameter(description = "Datos del cliente a crear") Cliente cliente) {
+
+        Cliente c = service.saveCliente(cliente);
+        return c == null ? ResponseEntity.badRequest().build() : ResponseEntity.ok(cliente);
+    }
+
+    @Transactional
+    @GetMapping("/{user}")
+    @Operation(summary = "Obtener cliente por nombre de usuario")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Cliente encontrado"),
+        @ApiResponse(responseCode = "401", description = "Token inválido o sin autorización"),
+        @ApiResponse(responseCode = "404", description = "Cliente no encontrado")
+    })
+    public ResponseEntity<Cliente> getClienteByUsername(
+            @PathVariable @Parameter(description = "Nombre de usuario del cliente") String user,
+            @RequestHeader(value = "Authorization", required = false)
+            @Parameter(description = "Token JWT en el encabezado Authorization (formato: Bearer <token>)") String authHeader) {
+
+        String token = this.jwtService.extractToken(authHeader);
+        if (token == null || !this.jwtService.validarToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        if (!(this.jwtService.obtenerUsuario(token).equals(user) || this.jwtService.obtenerTipo(token).equals("admin"))) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Cliente cliente = service.getClienteByUsername(user);
+        if (cliente == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(cliente);
+    }
+    
 }

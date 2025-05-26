@@ -5,7 +5,6 @@
 package api.services;
 
 import api.models.Cliente;
-import api.models.Usuario;
 import api.repositories.ClienteRepository;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,16 +26,15 @@ public class ClienteService {
         this.clienteRepository = clienteRepository;
     }
 
-    public List<Cliente> getAllClientes() {
-        List<Usuario> usuarios = usuarioService.getAllUsuarios();
-        return clienteRepository.getAllClientes(usuarios);
-    }
-
-    public Cliente postCliente(String user, Cliente cliente) {
-        return usuarioService.postCliente(user, cliente);
+    public Cliente updateCliente(String user, Cliente cliente) {
+        return clienteRepository.updateCliente(user, cliente);
     }
 
     public Cliente saveCliente(Cliente cliente) {
         return (Cliente) usuarioService.saveUsuario(cliente);
+    }
+
+    public Cliente getClienteByUsername(String user) {
+        return clienteRepository.getClienteByUsername(user);
     }
 }

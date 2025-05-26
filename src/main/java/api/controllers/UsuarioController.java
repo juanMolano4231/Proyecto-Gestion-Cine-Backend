@@ -4,23 +4,33 @@
  */
 package api.controllers;
 
+import api.models.LoginResponse;
 import api.services.UsuarioService;
- import api.models.Usuario;
+import api.models.Usuario;
+import api.models.data.UsuarioData;
+import api.services.JWTService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.transaction.Transactional;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -33,63 +43,70 @@ import org.springframework.web.bind.annotation.RestController;
 public class UsuarioController {
 
     private final UsuarioService service;
+    private final JWTService jwtService;
 
     @Autowired
-    public UsuarioController(UsuarioService service) {
-        this.service = service;
+    public UsuarioController(UsuarioService usuarioService, JWTService jwtService) {
+        this.jwtService = jwtService;
+        this.service = usuarioService;
     }
 
-    @GetMapping
-    @Operation(summary = "Obtener todos los usuarios", description = "Devuelve una lista de todos los usuarios registrados.")
+    @Transactional
+    @PostMapping("/login")
+    @Operation(summary = "Iniciar sesión", description = "Valida las credenciales del usuario y devuelve un token JWT si son correctas.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Lista de usuarios obtenida con éxito"),
-            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        @ApiResponse(responseCode = "200", description = "Inicio de sesión exitoso"),
+        @ApiResponse(responseCode = "401", description = "Credenciales inválidas")
     })
-    public ResponseEntity<List<Usuario>> getAllUsuarios() {
-        List<Usuario> usuarios = service.getAllUsuarios();
-        return new ResponseEntity<>(usuarios, HttpStatus.OK);
+    public ResponseEntity<LoginResponse> login(@RequestBody @Parameter(description = "Credenciales del usuario (usuario y pin)") Usuario usuario) {
+        Usuario user = service.login(usuario.getUsuario(), usuario.getPin());
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        
+        String tipo = service.consultarTipo(user.getUsuario());
+
+        String jwt = jwtService.generarToken(user, tipo);
+
+        LoginResponse response = new LoginResponse();
+        response.setToken(jwt);
+        response.setUsuario(user);
+
+        return ResponseEntity.ok(response);
     }
 
-    @PostMapping
-    @Operation(summary = "Crear un nuevo usuario", description = "Crea un nuevo usuario con los datos proporcionados.")
+    @Transactional
+    @GetMapping("/consultarTipo/{user}")
+    @Operation(summary = "Consultar tipo de usuario", description = "Devuelve el tipo de rol asignado al usuario (admin, empleado, etc).")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Usuario creado con éxito"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos")
-    })
-    public ResponseEntity<Usuario> createUsuario(@RequestBody @Parameter(description = "Datos del usuario a crear") Usuario usuario) {
-        Usuario newUsuario = service.saveUsuario(usuario);
-        return new ResponseEntity<>(newUsuario, HttpStatus.CREATED);
-    }
-
-    @GetMapping("/{user}")
-    @Operation(summary = "Obtener usuario por user", description = "Devuelve un usuario específico basado en su user.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Usuario encontrado"),
+        @ApiResponse(responseCode = "200", description = "Tipo de usuario encontrado"),
+        @ApiResponse(responseCode = "401", description = "Token JWT inválido o ausente"),
         @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     })
-    public ResponseEntity<Usuario> getUsuarioByUser(@PathVariable @Parameter(description = "user del usuario") String user) {
-        Usuario usuario = service.findByUser(user);
-        if (usuario != null) {
-            return new ResponseEntity<>(usuario, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<String> consultarTipo(
+            @PathVariable @Parameter(description = "Nombre de usuario") String user,
+            @RequestHeader(value = "Authorization", required = false)
+            @Parameter(description = "Token JWT en el encabezado Authorization (formato: Bearer <token>)") String authHeader) {
+        String token = this.jwtService.extractToken(authHeader);
+        if (token == null || !this.jwtService.validarToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or missing JWT token");
         }
+
+        String tipo = service.consultarTipo(user);
+        return tipo != null ? ResponseEntity.ok(tipo) : ResponseEntity.notFound().build();
     }
-    
-    @PostMapping("/{user}")
-    @Operation(summary = "Actualizar usuario", description = "Actualiza un usuario según los datos proporcionados.")
+
+    @GetMapping("/checkUsername/{user}")
+    @Operation(summary = "Verificar disponibilidad de nombre de usuario", description = "Indica si un nombre de usuario ya está en uso.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Usuario actualizada con éxito"),
-        @ApiResponse(responseCode = "400", description = "Datos inválidos")
+        @ApiResponse(responseCode = "200", description = "Consulta realizada exitosamente"),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    public ResponseEntity<Usuario> postUsuario(@PathVariable @Parameter(description = "username del usuario") String user,
-            @RequestBody @Parameter(description = "Datos del usuario a actualizar") Usuario usuario) {
-        Usuario nuevoUsuario = service.postUsuario(user, usuario);
-        if (nuevoUsuario == null) {
-            return new ResponseEntity<>(nuevoUsuario, HttpStatus.BAD_REQUEST);
-        } else {
-            return new ResponseEntity<>(nuevoUsuario, HttpStatus.CREATED);
-        }
+    public ResponseEntity<Boolean> checkUsername(
+            @PathVariable @Parameter(description = "Nombre de usuario a verificar") String user) {
+        Boolean disponible = service.checkUsername(user);
+        return disponible != null ? ResponseEntity.ok(disponible) : ResponseEntity.internalServerError().build();
     }
 
 }
